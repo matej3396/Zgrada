@@ -45,7 +45,7 @@ jobs:
       - name: Construire l'APK
         run: |
           # Toujours la même signature : chaque nouvelle version s'installe par-dessus l'ancienne.
-          mkdir -p ~/.android && cp ci/debug.keystore ~/.android/debug.keystore
+          # (clé de signature retirée : repo public)
           cd android && ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk ../zgrada.apk
 
