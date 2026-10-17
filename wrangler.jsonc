@@ -1,0 +1,9 @@
+// Zgrada : hébergement Cloudflare (Worker avec fichiers statiques), comme Canicrew. Le site est le dossier www/.
+// Déployé à chaque push sur main.
+{
+  "name": "zgrada",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./www"
+  }
+}
