@@ -1,0 +1,9 @@
+{
+  "appId": "ch.zgrada.app",
+  "appName": "Zgrada",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#F3F5F2",
+    "adjustMarginsForEdgeToEdge": "auto"
+  }
+}

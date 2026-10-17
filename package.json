@@ -1,0 +1,6 @@
+{
+  "name": "zgrada",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "test": "node tests/smoke.cjs" }
+}

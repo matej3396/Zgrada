@@ -1,0 +1,63 @@
+# Construit l'APK Android à chaque push sur main et le publie dans « Releases » (tag latest).
+# Rien à héberger : l'app et ses fichiers sont dans l'APK, elle marche hors ligne.
+name: APK Android
+
+on:
+  push:
+    branches: [main]
+    paths: ["www/**", "assets/**", "capacitor.config.json", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Capacitor
+        run: |
+          npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/assets@3
+          npx cap add android
+          npx capacitor-assets generate --android --iconBackgroundColor '#142A3B' --splashBackgroundColor '#F3F5F2' || echo "icônes : on garde celles par défaut"
+          npx cap sync android
+
+      - name: Numéro de version
+        run: |
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"0.1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+
+      - name: Construire l'APK
+        run: |
+          # Toujours la même signature : chaque nouvelle version s'installe par-dessus l'ancienne.
+          mkdir -p ~/.android && cp ci/debug.keystore ~/.android/debug.keystore
+          cd android && ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../zgrada.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zgrada-apk
+          path: zgrada.apk
+
+      - name: Publier dans Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest zgrada.apk --title "Zgrada 0.1.${{ github.run_number }}" \
+            --notes "Ouvrir cette page sur le téléphone, toucher zgrada.apk, puis Installer. Les nouvelles versions s'installent par-dessus (données gardées)."
