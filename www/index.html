@@ -96,7 +96,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .want span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .price { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
 .tab span { white-space: nowrap; }
-.onb { min-height: 100vh; min-height: 100dvh; gap: 12px; padding-top: 12px; }
+.onb { min-height: 100vh; min-height: 100dvh; gap: 10px; padding-top: 10px; }
 .onb .label { margin: 0 0 4px 4px; }
 .input.sm { min-height: 46px; padding: 9px 14px; border-radius: 16px; font-size: 15.5px; }
 .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
@@ -262,7 +262,7 @@ function vOnboard() {
   return '<div class="scr plain onb">' +
     '<div class="between"><div class="row">' + LOGO + '<span style="font-size:19px;font-weight:800;letter-spacing:-.02em">zgrada</span></div><button class="small b" style="border:0;background:none;padding:10px 0" data-act="skip">Passer</button></div>' +
     '<div><h1 class="h1" style="font-size:25px">Votre déménagement, plein de choses à échanger.</h1><div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">' + pill("Logement", "mint", "house") + pill("Meubles", "peach", "sofa") + pill("Coups de main", "lav", "hand") + "</div></div>" +
-    '<div class="col" style="gap:6px"><div class="label">Je propose <span style="font-weight:600;color:var(--ink-3)">· ce que je laisse, prête ou donne</span></div>' + chips(HAVE, "have") + "</div>" +
+    '<div class="col" style="gap:6px"><div class="label one">Je propose <span style="font-weight:600;color:var(--ink-3)">· je laisse, prête ou donne</span></div>' + chips(HAVE, "have") + "</div>" +
     '<div class="col" style="gap:6px"><div class="label">J’ai besoin de</div>' + chips(WANT, "want") + "</div>" +
     '<div class="g2"><div><div class="label">Prénom</div><input class="input sm" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Matej" autocomplete="given-name"></div><div><div class="label">Date</div><input class="input sm" type="date" data-bind="me.date" value="' + esc(m.date) + '"></div>' +
     '<div><div class="label">De</div><input class="input sm" data-bind="me.from" value="' + esc(m.from) + '" placeholder="Clarens"></div><div><div class="label">Vers</div><input class="input sm" data-bind="me.to" value="' + esc(m.to) + '" placeholder="Lausanne"></div></div>' +
