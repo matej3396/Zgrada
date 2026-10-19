@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FBF7F2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,7 +26,7 @@ body { min-height: 100vh; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-.scr { padding: calc(14px + env(safe-area-inset-top)) 18px 120px; display: flex; flex-direction: column; gap: 14px; min-height: 100vh; }
+.scr { padding: calc(14px + env(safe-area-inset-top)) 18px 170px; display: flex; flex-direction: column; gap: 14px; min-height: 100vh; }
 .scr.plain { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 .top { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 10px; }
 .ibtn { width: 44px; height: 44px; border-radius: 50%; background: var(--card); border: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(30, 43, 58, .07); flex-shrink: 0; }
@@ -88,6 +88,28 @@ textarea.input { min-height: 90px; resize: none; line-height: 1.4; }
 .crit.no { color: #9AA4AF; text-decoration: line-through; }
 .empty { text-align: center; padding: 30px 10px; color: var(--ink-3); font-size: 15px; }
 a { color: inherit; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.fcard { display: flex; gap: 12px; align-items: center; background: var(--card); border-radius: 24px; padding: 12px; box-shadow: var(--shadow); border: 0; width: 100%; text-align: left; }
+.fcard .ft { font-size: 16px; font-weight: 800; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.want { display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 6px 10px; font-size: 13px; font-weight: 700; max-width: 100%; min-width: 0; }
+.want span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.price { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+.tab span { white-space: nowrap; }
+/* Visite guidée */
+.dim { position: fixed; inset: 0; background: rgba(20, 28, 38, .55); z-index: 30; }
+.tourcard { position: fixed; left: 50%; transform: translateX(-50%); width: calc(min(480px, 100vw) - 32px); bottom: 104px; background: var(--card); border-radius: 28px; padding: 20px; z-index: 41; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .25); }
+.tourcard:after { content: ""; position: absolute; bottom: -9px; left: var(--ax, 50%); width: 20px; height: 20px; background: var(--card); transform: translateX(-50%) rotate(45deg); border-radius: 4px; }
+.tabbar.lift { z-index: 40; }
+.tab.hl, .fab.hl, .asst.hl { box-shadow: 0 0 0 4px var(--yellow); border-radius: 18px; color: #fff; }
+.fab.hl { border-radius: 50%; box-shadow: 0 0 0 5px #fff; }
+/* Assistant */
+.asst { position: fixed; right: max(16px, calc(50vw - 224px)); bottom: 98px; z-index: 21; width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--card); box-shadow: 0 8px 24px rgba(30, 43, 58, .2); display: flex; align-items: center; justify-content: center; padding: 0; }
+.asst:after { content: ""; position: absolute; right: 3px; top: 3px; width: 11px; height: 11px; border-radius: 50%; background: #2EBD7F; border: 2px solid #fff; }
+.asst.hl { z-index: 41; border-radius: 50%; box-shadow: 0 0 0 5px var(--yellow); }
+.ans { align-self: flex-start; background: var(--card); border-radius: 22px 22px 22px 6px; padding: 14px; box-shadow: 0 4px 14px rgba(30, 43, 58, .06); display: flex; flex-direction: column; gap: 8px; max-width: 92%; font-size: 15px; line-height: 1.4; }
+.ans ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.ans .t { font-weight: 800; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -178,12 +200,13 @@ function fresh() {
     v: 2, step: 0, tab: "explorer", stack: [], filter: "tout", q: "",
     me: { name: "", have: [], want: [], zone: "Lausanne", radius: 15, from: "", to: "", date: "", rooms: 3.5, budget: 1800, dog: false },
     offers: demoOffers(), favs: [], convs: [], tasks: {}, credits: 5, ledger: [{ t: "Bienvenue", n: 5, ts: Date.now() }],
-    code: Math.random().toString(36).slice(2, 8).toUpperCase(), refUsed: false, deals: 0
+    tour: -2, assist: [], code: Math.random().toString(36).slice(2, 8).toUpperCase(), refUsed: false, deals: 0
   };
 }
 var S;
 try { S = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { S = null; }
 if (!S || S.v !== 2) S = fresh();
+if (S.tour == null) S.tour = S.step >= 3 ? 0 : -2;
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast("Mémoire du téléphone pleine : retirez une photo"); } }
 var T = { toast: "", draft: null, typing: {}, search: false };
 var app = document.getElementById("app");
@@ -207,7 +230,7 @@ function crits(o) {
   if (m.date) L.push(["Libre avant le " + fmt(m.date), parse(o.free) <= parse(m.date)]);
   else L.push(["Libre le " + fmt(o.free), true]);
   if (m.dog) L.push(["Chiens acceptés", !!o.dogs]);
-  L.push(["À " + o.km + " km de " + (m.zone || "chez vous"), o.km <= (m.radius || 15)]);
+  L.push(["À " + num(o.km) + " km de " + (m.zone || "chez vous"), o.km <= (m.radius || 15)]);
   return L;
 }
 function score(o) {
@@ -220,8 +243,8 @@ function forYou() { return S.offers.filter(function (o) { return !o.gone && scor
 
 /* ---------- Écrans ---------- */
 function tabbar() {
-  var u = unread(), t = function (k, n, l) { return '<button class="tab' + (S.tab === k && !cur() ? " on" : "") + '" data-act="tab" data-arg="' + k + '">' + ic(n, 22) + "<span>" + l + "</span>" + (k === "messages" && u ? '<span class="dot">' + u + "</span>" : "") + "</button>"; };
-  return '<nav class="tabbar" aria-label="Navigation">' + t("explorer", "compass", "Explorer") + t("etapes", "cal", "Étapes") + '<button class="fab" data-act="publish" aria-label="Publier une annonce">' + ic("plus", 26, null, 2.4) + "</button>" + t("messages", "chat", "Messages") + t("moi", "user", "Moi") + "</nav>";
+  var u = unread(), hl = S.tour >= 0 ? TOUR[S.tour][0] : "", t = function (k, n, l) { return '<button class="tab' + (S.tab === k && !cur() ? " on" : "") + (hl === k ? " hl" : "") + '" data-act="tab" data-arg="' + k + '">' + ic(n, 22) + "<span>" + l + "</span>" + (k === "messages" && u ? '<span class="dot">' + u + "</span>" : "") + "</button>"; };
+  return '<button class="asst' + (hl === "asst" ? " hl" : "") + '" data-act="assist" aria-label="Zora, l’assistante">' + mascot(46) + '</button><nav class="tabbar' + (hl ? " lift" : "") + '" aria-label="Navigation">' + t("explorer", "compass", "Explorer") + t("etapes", "cal", "Étapes") + '<button class="fab' + (hl === "fab" ? " hl" : "") + '" data-act="publish" aria-label="Publier une annonce">' + ic("plus", 26, null, 2.4) + "</button>" + t("messages", "chat", "Messages") + t("moi", "user", "Moi") + "</nav>";
 }
 function topBack(title, right) { return '<div class="top"><button class="ibtn" data-act="back" aria-label="Retour">' + ic("back", 22) + '</button><span class="ttl" style="flex:1;text-align:center">' + (title || "") + "</span>" + (right || '<span style="width:44px"></span>') + "</div>"; }
 
@@ -260,11 +283,12 @@ function vOnboard() {
 
 /* Explorer */
 function feedCard(o) {
-  var k = KIND[o.kind], fav = S.favs.indexOf(o.id) >= 0;
-  return '<button class="card row" style="gap:14px;align-items:stretch;border:0;text-align:left;width:100%" data-act="open" data-arg="' + o.id + '">' + tile(k.icon, k.col, 78, o.photo) +
-    '<div class="grow col" style="gap:6px"><div class="between" style="align-items:flex-start"><b style="font-size:16px;line-height:1.2">' + esc(o.title) + "</b>" + (o.mine ? pill("Vous", "butter") : av(initials(o.owner), o.ocol, 28)) + "</div>" +
-    '<span class="small">' + esc(o.where) + (o.km != null && !o.mine ? " · " + o.km + " km" : "") + (o.kind === "logement" ? " · " + o.rent.toLocaleString("fr-CH") + " CHF" : "") + "</span>" +
-    '<div class="row" style="gap:6px;flex-wrap:wrap">' + pill(o.wants === "À donner" ? "À donner" : "Contre : " + o.wants, o.wants === "À donner" ? "mint" : (k.col === "lav" ? "butter" : "lav"), o.wants === "À donner" ? "heart" : "swap") + (fav ? '<span style="color:#E0446A">' + ic("heart", 16, null, 2.2) + "</span>" : "") + "</div></div></button>";
+  var k = KIND[o.kind], fav = S.favs.indexOf(o.id) >= 0, give = o.wants === "À donner", wc = pal(give ? "mint" : k.col === "lav" ? "butter" : "lav");
+  var meta = esc(o.where.split(",").pop().trim()) + (o.km != null && !o.mine ? " · " + num(o.km) + " km" : "");
+  return '<button class="fcard" data-act="open" data-arg="' + o.id + '">' + tile(k.icon, k.col, 64, o.photo) +
+    '<div class="grow col" style="gap:5px"><div class="ft">' + esc(o.title) + "</div>" +
+    '<div class="between" style="gap:8px"><span class="small one">' + meta + "</span>" + (o.kind === "logement" ? '<span class="price">' + o.rent.toLocaleString("fr-CH") + " CHF</span>" : o.mine ? pill("Vous", "butter") : fav ? '<span style="color:#E0446A">' + ic("heart", 16, null, 2.2) + "</span>" : "") + "</div>" +
+    '<div class="want" style="background:' + wc.bg + ";color:" + wc.fg + '">' + ic(give ? "heart" : "swap", 15, null, 2.2) + "<span>" + (give ? "À donner" : "Contre " + esc(o.wants.charAt(0).toLowerCase() + o.wants.slice(1))) + "</span></div></div></button>";
 }
 function vExplorer() {
   var fy = forYou(), f = S.filter, q = (S.q || "").toLowerCase().trim();
@@ -279,7 +303,7 @@ function vExplorer() {
   return '<div class="scr"><div class="top"><div><div class="small b">' + hello + (S.me.name ? " " + esc(S.me.name) : "") + '</div><div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Près de vous</div></div><button class="ibtn" data-act="search" aria-label="Rechercher">' + ic(T.search ? "x" : "search", 21) + "</button></div>" +
     (T.search ? '<input class="input" id="q" data-bind="q" value="' + esc(S.q) + '" placeholder="Canapé, Renens, camionnette…" autofocus>' : "") +
     '<div class="scroller">' + chip("tout", "Tout") + (fy.length ? chip("pour", "Pour vous", "spark") : "") + chip("logement", "Logements", "house") + chip("objet", "Objets", "sofa") + chip("aide", "Aide", "hand") + "</div>" +
-    (fy.length && f !== "pour" ? '<button class="card row" style="background:var(--ink);color:#fff;border:0;text-align:left;width:100%" data-act="filter" data-arg="pour"><div class="av" style="width:42px;height:42px;background:var(--yellow);color:var(--ink)">' + ic("spark", 22, null, 2.2) + '</div><div class="grow"><b style="font-size:15px">' + fy.length + " échange" + (fy.length > 1 ? "s vous correspondent" : " vous correspond") + '</b><div style="font-size:13px;color:#B9C4D0">' + esc(fy[0].title) + " · " + esc(fy[0].where) + "</div></div>" + ic("next", 20, "#fff") + "</button>" : "") +
+    (fy.length && f !== "pour" ? '<button class="card row" style="background:var(--ink);color:#fff;border:0;text-align:left;width:100%" data-act="filter" data-arg="pour"><div class="av" style="width:42px;height:42px;background:var(--yellow);color:var(--ink)">' + ic("spark", 22, null, 2.2) + '</div><div class="grow"><b style="font-size:15px">' + fy.length + " échange" + (fy.length > 1 ? "s" : "") + ' pour vous</b><div class="one" style="font-size:13px;color:#B9C4D0">' + esc(fy[0].title) + "</div></div>" + ic("next", 20, "#fff") + "</button>" : "") +
     (list.length ? list.map(feedCard).join("") : '<div class="empty">Rien ici pour l’instant.<br>Publiez ce que vous avez avec le bouton jaune.</div>') +
     '<div class="small" style="text-align:center;padding:4px 10px">Zgrada démarre : les annonces marquées « exemple » montrent comment ça marche. Les vôtres sont bien réelles.</div>' +
     "</div>" + tabbar();
@@ -293,7 +317,7 @@ function vOffer(p) {
     '<button class="ibtn" style="left:18px" data-act="back" aria-label="Retour">' + ic("back", 22) + "</button>" +
     (o.mine ? "" : '<button class="ibtn' + (fav ? " on" : "") + '" style="right:18px" data-act="fav" data-arg="' + o.id + '" aria-label="Garder">' + ic("heart", 21, null, 2.1) + "</button>") + "</div>";
   h += '<div class="between" style="align-items:flex-start"><h1 class="h1" style="font-size:26px">' + esc(o.title) + "</h1>" + (o.demo ? '<span class="demo">exemple</span>' : "") + "</div>";
-  h += '<div class="wrap">' + pill(o.where + (o.mine ? "" : " · " + o.km + " km"), "sky", "pin") + (o.state ? pill(o.state, "mint", "check") : "") + (o.until ? pill("À prendre avant le " + fmt(o.until), "butter", "cal") : "") + (o.kind === "logement" ? pill(num(o.rooms) + " pièces · " + o.rent.toLocaleString("fr-CH") + " CHF", "mint", "house") + pill("Libre le " + fmt(o.free), "butter", "cal") : "") + "</div>";
+  h += '<div class="wrap">' + pill(o.where + (o.mine ? "" : " · " + num(o.km) + " km"), "sky", "pin") + (o.state ? pill(o.state, "mint", "check") : "") + (o.until ? pill("À prendre avant le " + fmt(o.until), "butter", "cal") : "") + (o.kind === "logement" ? pill(num(o.rooms) + " pièces · " + o.rent.toLocaleString("fr-CH") + " CHF", "mint", "house") + pill("Libre le " + fmt(o.free), "butter", "cal") : "") + "</div>";
   if (o.kind === "logement" && !o.mine) {
     var c = crits(o), ok = c.filter(function (x) { return x[1]; }).length;
     if (S.me.have.indexOf("Mon appartement") >= 0) h += '<div style="position:relative;display:flex;gap:10px"><div class="card col" style="flex:1;padding:14px;gap:6px">' + tile("house", "sky", 50, null) + '<span class="small b">Vous laissez</span><b style="font-size:15px">Votre appartement</b><span class="small">' + esc(S.me.from || "Votre ville") + '</span></div><div class="card col" style="flex:1;padding:14px;gap:6px">' + tile("house", "mint", 50, null) + '<span class="small b">Vous recevez</span><b style="font-size:15px">' + num(o.rooms) + ' pièces</b><span class="small">' + esc(o.where.split(",")[0]) + '</span></div><div style="position:absolute;left:50%;top:32px;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:var(--yellow);border:4px solid var(--bg);display:flex;align-items:center;justify-content:center">' + ic("swap", 20, null, 2.4) + "</div></div>";
@@ -431,7 +455,7 @@ function vMoi() {
     '<h2 class="h2">Mes annonces</h2>' + (mine.length ? mine.map(feedCard).join("") : '<button class="li" data-act="publish">' + tile("plus", "butter", 44) + '<div class="grow"><b>Publier ce que vous avez</b><div class="small">Un meuble, un coup de main, votre appartement</div></div></button>') +
     (favs.length ? '<h2 class="h2">Gardés</h2>' + favs.map(feedCard).join("") : "") +
     '<div class="card flat row" style="background:var(--butter)">' + tile("spark", "butter", 44) + '<div class="grow"><b style="font-size:15px">Invitez un ami : +3 crédits</b><div class="small" style="color:var(--butter-i)">Pour vous deux · code ' + S.code + '</div></div><button class="ibtn" style="width:40px;height:40px" data-act="copy" aria-label="Copier le code">' + ic("copy", 18) + "</button></div>" +
-    '<h2 class="h2">Réglages</h2><button class="li" data-act="editProfile">' + tile("user", "sky", 40) + '<b class="grow">Modifier mes envies et mon déménagement</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="reset">' + tile("trash", "peach", 40) + '<div class="grow"><b>Tout effacer</b><div class="small">Vos données ne sont que sur ce téléphone</div></div></button>' +
+    '<h2 class="h2">Aide</h2><button class="li" data-act="tour">' + tile("compass", "mint", 40) + '<b class="grow">Revoir la visite des onglets</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="assist"><div class="av" style="width:40px;height:40px;background:var(--butter)">' + mascot(32) + '</div><b class="grow">Poser une question à Zora</b>' + ic("next", 18, "#B0B8C2") + '</button><h2 class="h2">Réglages</h2><button class="li" data-act="editProfile">' + tile("user", "sky", 40) + '<b class="grow">Modifier mes envies et mon déménagement</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="reset">' + tile("trash", "peach", 40) + '<div class="grow"><b>Tout effacer</b><div class="small">Vos données ne sont que sur ce téléphone</div></div></button>' +
     '<a class="small" style="text-align:center;padding:6px" href="v1.html">Ancienne version de Zgrada</a></div>' + tabbar();
 }
 function vCredits() {
@@ -441,6 +465,117 @@ function vCredits() {
     '<h2 class="h2">Historique</h2>' + S.ledger.slice().reverse().map(function (l) { return '<div class="li"><div class="grow"><b style="font-size:15px">' + esc(l.t) + '</b><div class="small">' + new Date(l.ts).getDate() + " " + MOIS[new Date(l.ts).getMonth()] + '</div></div><b style="font-size:17px;color:' + (l.n > 0 ? "var(--mint-i)" : "var(--ink)") + '">' + (l.n > 0 ? "+" : "−") + Math.abs(l.n) + "</b></div>"; }).join("") +
     '<div class="card flat col" style="background:var(--butter)"><b>Code d’un ami</b>' + (S.refUsed ? '<span class="small" style="color:var(--butter-i)">Déjà utilisé · +3 reçus</span>' : '<div class="row"><input class="input" id="ref" placeholder="ABC123" style="min-height:44px;text-transform:uppercase"><button class="btn sm" data-act="ref">Valider</button></div>') + "</div>" +
     '<button class="btn y" data-act="buy">Recharger 10 crédits · 5 CHF</button></div>';
+}
+
+/* ---------- Zora, l’assistante (hors ligne, comme Truffo dans Canicrew) ----------
+   Elle reconnaît la question par mots-clés et synonymes, puis répond avec une fiche courte et des boutons vers l’app. */
+function mascot(s) {
+  return '<svg aria-hidden="true" width="' + s + '" height="' + s + '" viewBox="0 0 48 48"><path d="M8 22 24 9l16 13" fill="none" stroke="#1E2B3A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="20" width="26" height="21" rx="8" fill="#FFC83D"/><circle cx="19" cy="29" r="2.4" fill="#1E2B3A"/><circle cx="29" cy="29" r="2.4" fill="#1E2B3A"/><path d="M20 34.5c2.4 2 5.6 2 8 0" fill="none" stroke="#1E2B3A" stroke-width="2.2" stroke-linecap="round"/><circle cx="15.5" cy="33" r="2" fill="#FF9F7A" opacity=".7"/><circle cx="32.5" cy="33" r="2" fill="#FF9F7A" opacity=".7"/></svg>';
+}
+var KB = [
+  { id: "app", q: "Comment marche Zgrada ?", k: ["comment ca marche", "zgrada", "application", "app", "fonctionne", "utiliser", "onglet", "aide moi", "visite"],
+    t: "Zgrada en 30 secondes", p: "Pendant un déménagement, plein de choses changent de mains. Zgrada vous met en relation avec des gens près de chez vous pour les échanger.",
+    s: ["Explorer : les logements, objets et coups de main autour de vous.", "Le bouton jaune « + » : publiez ce que vous avez.", "Messages : proposez un troc, fixez un rendez-vous.", "Étapes : ce qu’il reste à faire pour votre déménagement."], a: [["Revoir la visite", "tour"]] },
+  { id: "troc", q: "Comment proposer un échange ?", k: ["troc", "echange", "echanger", "proposer", "proposition", "contre", "equilibre", "jauge"],
+    t: "Proposer un troc", s: ["Ouvrez une annonce qui vous plaît.", "Touchez « Proposer l’échange » ou « Je le veux ».", "Choisissez ce que vous donnez : un objet, un coup de main, ou des crédits si le troc ne tombe pas juste.", "La jauge vous dit si l’échange est équilibré. Ajoutez un mot et envoyez."], a: [["Voir les annonces", "tab|explorer"]] },
+  { id: "publier", q: "Comment publier une annonce ?", k: ["publier", "annonce", "poster", "mettre en ligne", "vendre", "donner", "photo", "se debarrasser", "debarrasser"],
+    t: "Publier une annonce", s: ["Touchez le bouton jaune « + » en bas.", "Choisissez : objet, coup de main ou logement.", "Ajoutez une photo (elle reste sur votre téléphone) et un titre clair.", "Dites ce que vous voulez en échange, ou « À donner »."], a: [["Publier maintenant", "publish"]] },
+  { id: "credits", q: "À quoi servent les crédits ?", k: ["credit", "credits", "payer", "prix", "gratuit", "cout", "coute", "recharger", "argent", "twint"],
+    t: "Les crédits", p: "Vous en recevez 5 à l’arrivée. Ils servent de gage quand vous acceptez un échange, et de monnaie d’appoint quand le troc ne tombe pas juste. 10 crédits = 5 CHF ; ils ne se reconvertissent pas en argent.", a: [["Voir mes crédits", "credits"]] },
+  { id: "pot", q: "C’est quoi les 2 crédits en gage ?", k: ["gage", "pot", "mise", "engagement", "faux bond", "lapin", "pas venu", "annule", "rembourse"],
+    t: "Le pot d’engagement", p: "Quand vous dites oui à un rendez-vous, chacun met 2 crédits en gage. Une fois l’échange fait, vous confirmez tous les deux et 1 crédit revient à chacun. Si quelqu’un ne vient pas, sa mise va à l’autre. Ça évite les lapins." },
+  { id: "parrain", q: "Comment gagner des crédits ?", k: ["parrain", "parrainage", "ami", "code", "inviter", "gagner"],
+    t: "Gagner des crédits", s: ["Invitez un ami avec votre code (onglet Moi) : +3 pour vous, +3 pour lui.", "Chaque échange réalisé vous rend 1 crédit sur votre mise."], a: [["Mon code", "tab|moi"]] },
+  { id: "resilier", q: "Comment résilier mon bail ?", k: ["resilier", "resiliation", "bail", "preavis", "conge", "quitter appartement", "lettre", "terme", "echeance"],
+    t: "Résilier son bail", p: "En Suisse, la résiliation se fait par écrit et doit arriver chez le bailleur avant le début du préavis, en général 3 mois avant une échéance prévue par votre contrat.",
+    s: ["Regardez dans votre bail les échéances et le délai de préavis (dans le canton de Vaud, souvent fin mars, fin juin ou fin septembre).", "Envoyez une lettre recommandée, signée. Si vous êtes marié·e ou en partenariat enregistré, les deux signent.", "Comptez quelques jours de marge pour l’acheminement du recommandé."], n: "Votre contrat fait foi. En cas de doute, l’ASLOCA conseille les locataires.", a: [["Ajouter à mes étapes", "tab|etapes"]] },
+  { id: "avant", q: "Je veux partir avant la fin du préavis", k: ["avant terme", "partir avant", "plus tot", "locataire de remplacement", "remplacant", "reprise de bail", "reprendre bail", "candidat solvable"],
+    t: "Partir avant l’échéance", p: "Vous pouvez être libéré plus tôt si vous proposez un locataire de remplacement solvable, prêt à reprendre le bail aux mêmes conditions (art. 264 du Code des obligations).",
+    s: ["Publiez votre appartement sur Zgrada avec « Reprendre mon bail ».", "Transmettez au bailleur le dossier du candidat (extrait des poursuites, revenus).", "Gardez une trace écrite de tout."], a: [["Publier mon appartement", "publish"]] },
+  { id: "echangeappart", q: "Peut-on échanger deux appartements ?", k: ["echanger appartement", "echange appartement", "echange de logement", "swap", "deux appartements"],
+    t: "Échanger deux appartements", p: "C’est possible, mais chaque bailleur doit être d’accord : en pratique, chacun résilie et présente l’autre comme locataire de remplacement. Zgrada vous aide à trouver la bonne personne ; l’accord des régies reste indispensable." },
+  { id: "caution", q: "Comment récupérer ma garantie de loyer ?", k: ["caution", "garantie", "depot", "recuperer garantie", "swisscaution", "trois mois de loyer"],
+    t: "La garantie de loyer", p: "Elle est déposée sur un compte bloqué à votre nom (au maximum 3 mois de loyer). À la sortie, la banque la libère avec l’accord écrit du bailleur, ou sur décision de justice.",
+    s: ["Après l’état des lieux de sortie, demandez au bailleur de signer la libération.", "Sans réclamation de sa part dans l’année qui suit la fin du bail, vous pouvez demander la libération à la banque."] },
+  { id: "edl", q: "Comment préparer l’état des lieux ?", k: ["etat des lieux", "edl", "remise", "nettoyage", "degat", "defaut", "dommage", "peinture"],
+    t: "L’état des lieux", s: ["Nettoyez à fond (four, vitres, stores, aérations). Beaucoup font appel à une entreprise avec garantie de remise.", "Prenez des photos datées de chaque pièce.", "Relisez le procès-verbal avant de signer ; n’acceptez pas ce qui vous semble faux.", "À l’entrée, signalez rapidement par écrit les défauts qui n’y figurent pas."], a: [["Mes étapes", "tab|etapes"]] },
+  { id: "commune", q: "Où annoncer mon arrivée ?", k: ["commune", "controle des habitants", "annoncer", "arrivee", "depart", "inscrire", "domicile", "permis"],
+    t: "Annoncer départ et arrivée", s: ["Annoncez votre départ à l’ancienne commune.", "Inscrivez-vous au contrôle des habitants de la nouvelle commune dans les 8 jours (canton de Vaud). Beaucoup de communes le font en ligne.", "Prenez une pièce d’identité, le bail et, selon le cas, le permis de séjour."] },
+  { id: "poste", q: "Comment faire suivre mon courrier ?", k: ["poste", "courrier", "adresse", "faire suivre", "reexpedition", "changement d adresse"],
+    t: "Changer d’adresse", s: ["La Poste propose un service payant pour faire suivre le courrier : à commander en ligne quelques jours avant.", "Prévenez aussi l’assurance maladie, la banque, l’employeur et vos abonnements."] },
+  { id: "camion", q: "Où garer le camion de déménagement ?", k: ["camion", "camionnette", "stationnement", "garer", "parking", "place", "autorisation", "utilitaire", "van"],
+    t: "Le camion et la place de parc", s: ["Pour bloquer une place devant chez vous, demandez une autorisation de stationnement à la commune ou à la police, quelques jours avant.", "Sur Zgrada, cherchez une camionnette à échanger contre un service."], a: [["Voir les coups de main", "filterGo|aide"]] },
+  { id: "bras", q: "Comment trouver de l’aide pour porter ?", k: ["porter", "aide", "bras", "demenageur", "amis", "monter", "escalier", "costaud", "coup de main"],
+    t: "Trouver des bras", s: ["Filtrez Explorer sur « Aide » : des voisins proposent leur aide contre un service ou des crédits.", "Publiez votre demande avec le bouton « + », en précisant l’étage et l’heure."], a: [["Voir l’aide", "filterGo|aide"], ["Publier", "publish"]] },
+  { id: "energie", q: "Que faire pour l’électricité et internet ?", k: ["electricite", "compteur", "internet", "wifi", "box", "swisscom", "sil", "energie", "romande energie"],
+    t: "Électricité et internet", s: ["Annoncez le relevé des compteurs à votre fournisseur (à Lausanne, les SIL) au départ et à l’arrivée.", "Internet : prévenez votre opérateur 2 à 3 semaines avant, le temps d’activer la ligne."] },
+  { id: "assurance", q: "Et mon assurance ménage ?", k: ["assurance", "menage", "rc", "responsabilite civile", "assureur"],
+    t: "Assurances", p: "Signalez votre nouvelle adresse à votre assurance ménage et RC : la prime peut changer selon le lieu et la surface. Votre RC couvre souvent les petits dégâts causés au logement loué, vérifiez votre contrat." },
+  { id: "chien", q: "Je déménage avec mon chien", k: ["chien", "chat", "animal", "animaux", "amicus", "chiot"],
+    t: "Avec un animal", s: ["Vérifiez que le nouveau bail accepte les animaux (sur Zgrada, le critère « Chiens acceptés »).", "Mettez à jour l’adresse dans AMICUS, la base de données des chiens, via votre commune ou votre vétérinaire.", "Le jour J, gardez-le au calme chez quelqu’un."] },
+  { id: "arnaque", q: "Comment éviter les arnaques ?", k: ["arnaque", "escroquerie", "fraude", "faux", "securite", "confiance", "payer avant", "western union", "suspect"],
+    t: "Rester prudent", s: ["Ne payez jamais un logement avant de l’avoir visité et d’avoir rencontré le bailleur ou la régie.", "Méfiez-vous d’un loyer bien en dessous du quartier ou d’un propriétaire « à l’étranger ».", "Donnez rendez-vous dans un lieu public pour les petits objets.", "Sur Zgrada, signalez tout profil suspect."] },
+  { id: "dossier", q: "Quels documents pour un appartement ?", k: ["dossier", "document", "poursuites", "extrait", "salaire", "fiche de salaire", "candidature", "regie"],
+    t: "Le dossier de candidature", s: ["Extrait du registre des poursuites (moins de 3 mois).", "3 dernières fiches de salaire ou contrat de travail.", "Copie de la pièce d’identité ou du permis.", "Attestation d’assurance RC."] },
+  { id: "donnees", q: "Où sont mes données ?", k: ["donnees", "vie privee", "confidentialite", "serveur", "rgpd", "effacer", "supprimer"],
+    t: "Vos données", p: "Pour l’instant, tout reste sur votre téléphone : annonces, photos, messages. Vous pouvez tout effacer dans Moi › Réglages." }
+];
+var POPULAR = ["app", "troc", "resilier", "bras", "credits", "commune"];
+var STOP = "le la les un une des de du d l a au aux et ou en pour par sur dans avec mon ma mes ton ta tes je tu il on nous vous est c ce ca que qui quoi comment faire fait peut peux puis dois est-ce est ce ne pas plus".split(" ");
+function norm(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, " ").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
+function findTopics(q) {
+  var n = " " + norm(q) + " ", toks = n.trim().split(" ").filter(function (w) { return w.length > 2 && STOP.indexOf(w) < 0; });
+  return KB.map(function (t) {
+    var sc = 0;
+    t.k.forEach(function (k) {
+      if (k.indexOf(" ") >= 0) { if (n.indexOf(" " + k) >= 0) sc += 3; return; }
+      var stem = k.length > 5 ? k.slice(0, k.length - 2) : k;
+      if (toks.some(function (w) { return w === k || (w.length >= 4 && w.indexOf(stem) === 0); })) sc += 2;
+    });
+    return { t: t, sc: sc };
+  }).filter(function (x) { return x.sc >= 2; }).sort(function (a, b) { return b.sc - a.sc; });
+}
+function answerHtml(t) {
+  return '<div class="ans"><div class="t">' + t.t + "</div>" + (t.p ? "<div>" + t.p + "</div>" : "") + (t.s ? "<ol>" + t.s.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ol>" : "") +
+    (t.n ? '<div class="small">' + t.n + "</div>" : "") + (t.a ? '<div class="wrap" style="margin-top:4px">' + t.a.map(function (a) { var p = a[1].split("|"); return '<button class="chip sm on" data-act="' + p[0] + '"' + (p[1] ? ' data-arg="' + p[1] + '"' : "") + ">" + a[0] + "</button>"; }).join("") + "</div>" : "") + "</div>";
+}
+function vAssist() {
+  var L = S.assist || (S.assist = []), body = "";
+  body += '<div class="ans"><div>Bonjour' + (S.me.name ? " " + esc(S.me.name) : "") + ' ! Moi c’est Zora. Posez-moi une question sur l’app ou sur votre déménagement, avec vos mots.</div></div>';
+  L.forEach(function (m) {
+    if (m.me) body += '<div class="bubble me">' + esc(m.t) + "</div>";
+    else if (m.topic) { var t = KB.filter(function (x) { return x.id === m.topic; })[0]; if (t) body += answerHtml(t); }
+    else if (m.pick) body += '<div class="ans"><div>Je ne suis pas sûre d’avoir compris. C’est l’une de ces questions ?</div><div class="wrap">' + m.pick.map(function (id) { var t = KB.filter(function (x) { return x.id === id; })[0]; return '<button class="chip sm" data-act="ask" data-arg="' + id + '">' + t.q + "</button>"; }).join("") + "</div></div>";
+    else body += '<div class="ans"><div>' + esc(m.t) + "</div></div>";
+  });
+  return '<div class="scr plain" style="padding-bottom:calc(160px + env(safe-area-inset-bottom))"><div class="top"><button class="ibtn" data-act="back" aria-label="Retour">' + ic("back", 22) + '</button><div class="row grow"><div class="av" style="width:44px;height:44px;background:var(--butter)">' + mascot(36) + '</div><div><b style="font-size:16px">Zora</b><div class="small">Assistante Zgrada · hors ligne</div></div></div>' + (L.length ? '<button class="small b" style="border:0;background:none" data-act="clearAsk">Effacer</button>' : "") + "</div>" +
+    '<div class="col" style="gap:10px">' + body + "</div>" +
+    '<div style="position:fixed;left:50%;transform:translateX(-50%);width:min(480px,100vw);bottom:0;padding:10px 18px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 22%);display:flex;flex-direction:column;gap:8px">' +
+    '<div class="scroller" style="margin:0 -18px">' + POPULAR.map(function (id) { var t = KB.filter(function (x) { return x.id === id; })[0]; return '<button class="chip sm" data-act="ask" data-arg="' + id + '">' + t.q + "</button>"; }).join("") + "</div>" +
+    '<form class="row" data-form="ask"><input class="input" style="border-radius:999px" id="askq" placeholder="Ex. : comment résilier mon bail ?" autocomplete="off"><button class="fab" style="width:52px;height:52px" aria-label="Demander">' + ic("send", 22, null, 2.4) + "</button></form></div></div>";
+}
+function askText(q) {
+  q = (q || "").trim(); if (!q) return;
+  var L = S.assist || (S.assist = []); L.push({ me: true, t: q });
+  var r = findTopics(q);
+  if (r.length && (r.length === 1 || r[0].sc >= r[1].sc + 2 || r[0].sc >= 4)) L.push({ topic: r[0].t.id });
+  else if (r.length) L.push({ pick: r.slice(0, 3).map(function (x) { return x.t.id; }) });
+  else L.push({ t: "Je n’ai pas trouvé. Essayez avec d’autres mots, par exemple « résilier mon bail », « trouver de l’aide » ou « crédits »." });
+  if (L.length > 40) L.splice(0, L.length - 40);
+  save(); render(); setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30);
+}
+/* Visite guidée des onglets */
+var TOUR = [
+  ["explorer", "compass", "mint", "Explorer", "Les échanges près de chez vous : logements, objets et coups de main. « Pour vous » met en avant ce qui correspond à vos envies."],
+  ["etapes", "cal", "lav", "Étapes", "Votre déménagement en version légère : ce qu’il faut faire, et quand. Cochez au fur et à mesure."],
+  ["fab", "plus", "butter", "Le bouton +", "Publiez ce que vous avez : un meuble, un coup de main, votre appartement. Dites ce que vous voulez en échange."],
+  ["messages", "chat", "sky", "Messages", "Vos propositions et rendez-vous. Quand vous dites oui, chacun met 2 crédits en gage ; 1 revient une fois l’échange fait."],
+  ["moi", "user", "peach", "Moi", "Vos annonces, vos crédits, votre code pour inviter un ami et les réglages."],
+  ["asst", "spark", "butter", "Zora, votre assistante", "Une question sur l’app, un bail à résilier, une caution à récupérer ? Touchez la petite maison, elle vous répond."]
+];
+function tourHtml() {
+  var i = S.tour, st = TOUR[i], ax = { explorer: "12%", etapes: "31%", fab: "50%", messages: "69%", moi: "88%", asst: "88%" }[st[0]];
+  return '<div class="dim" data-act="tourNext"></div><div class="tourcard" style="--ax:' + ax + ";" + (st[0] === "asst" ? "bottom:172px" : "") + '"><div class="row">' + (st[0] === "asst" ? '<div class="av" style="width:52px;height:52px;background:var(--butter)">' + mascot(42) + "</div>" : tile(st[1], st[2], 52)) + '<div class="grow"><div class="small b">' + (i + 1) + " sur " + TOUR.length + '</div><b style="font-size:19px;letter-spacing:-.01em">' + st[3] + '</b></div></div><p class="sub" style="margin:0">' + st[4] + '</p><div class="row"><button class="btn ghost sm" style="flex:1" data-act="tourEnd">Passer</button><button class="btn y sm" style="flex:1.4" data-act="tourNext">' + (i === TOUR.length - 1 ? "C’est parti" : "Suivant") + "</button></div></div>";
 }
 
 /* ---------- Routeur ---------- */
@@ -454,12 +589,13 @@ function view() {
     if (c.v === "deal") return vDeal(c.p);
     if (c.v === "publish") return vPublish();
     if (c.v === "credits") return vCredits();
+    if (c.v === "assist") return vAssist();
   }
   return { explorer: vExplorer, etapes: vEtapes, messages: vMessages, moi: vMoi }[S.tab]();
 }
 function render() {
   var f = document.activeElement, fid = f && (f.id || f.getAttribute("data-bind")), pos = f && f.selectionStart;
-  try { app.innerHTML = view() + (T.toast ? '<div class="toast" role="status">' + esc(T.toast) + "</div>" : ""); }
+  try { app.innerHTML = view() + (S.step >= 3 && S.tour >= 0 && !cur() ? tourHtml() : "") + (T.toast ? '<div class="toast" role="status">' + esc(T.toast) + "</div>" : ""); }
   catch (e) { console.error(e); app.innerHTML = '<div class="scr plain"><h1 class="h1">Oups, un écran n’a pas pu s’afficher.</h1><p class="sub">' + esc(e.message) + '</p><button class="btn y" data-act="recover">Revenir à l’accueil</button></div>'; }
   if (fid) { var el = document.getElementById(fid) || app.querySelector('[data-bind="' + fid + '"]'); if (el && el.type !== "date" && el.tagName !== "SELECT") { el.focus(); try { if (pos != null) el.setSelectionRange(pos, pos); } catch (e) {} } }
 }
@@ -479,10 +615,16 @@ function replyLater(c, msg, card, ms) {
 /* ---------- Actions ---------- */
 var A = {
   step: function (n) { S.step = +n; save(); render(); window.scrollTo(0, 0); },
-  skip: function () { S.step = 3; save(); render(); },
+  skip: function () { S.step = 3; S.tour = 0; save(); render(); },
+  tour: function () { S.stack = []; S.tab = "explorer"; S.tour = 0; save(); render(); window.scrollTo(0, 0); },
+  tourNext: function () { S.tour += 1; if (S.tour >= TOUR.length) { S.tour = -1; S.tab = "explorer"; } else { var k = TOUR[S.tour][0]; if (["explorer", "etapes", "messages", "moi"].indexOf(k) >= 0) S.tab = k; } save(); render(); window.scrollTo(0, 0); },
+  tourEnd: function () { S.tour = -1; S.tab = "explorer"; save(); render(); },
+  assist: function () { go("assist"); setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); },
+  ask: function (id) { var t = KB.filter(function (x) { return x.id === id; })[0]; S.assist = S.assist || []; S.assist.push({ me: true, t: t.q }); S.assist.push({ topic: id }); save(); render(); setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); },
+  clearAsk: function () { S.assist = []; save(); render(); },
   toggle: function (a) { var p = a.split("|"), L = S.me[p[0]], i = L.indexOf(p[1]); if (i >= 0) L.splice(i, 1); else L.push(p[1]); save(); render(); },
   dog: function () { S.me.dog = !S.me.dog; save(); render(); },
-  finish: function () { S.me.rooms = +S.me.rooms || 0; S.me.budget = parseInt(String(S.me.budget).replace(/\D/g, ""), 10) || 0; S.step = 3; S.tab = "explorer"; S.stack = []; S.filter = forYou().length ? "pour" : "tout"; save(); render(); window.scrollTo(0, 0); },
+  finish: function () { S.me.rooms = +S.me.rooms || 0; S.me.budget = parseInt(String(S.me.budget).replace(/\D/g, ""), 10) || 0; S.step = 3; S.tab = "explorer"; S.stack = []; S.filter = forYou().length ? "pour" : "tout"; if (S.tour == null || S.tour === -2) S.tour = 0; save(); render(); window.scrollTo(0, 0); },
   tab: tab, back: back,
   recover: function () { S.stack = []; S.tab = "explorer"; save(); render(); },
   filter: function (f) { S.filter = f; save(); render(); },
@@ -573,6 +715,7 @@ app.addEventListener("change", function (e) {
 });
 app.addEventListener("submit", function (e) {
   var f = e.target.closest("[data-form]"); if (!f) return; e.preventDefault();
+  if (f.getAttribute("data-form") === "ask") { var qi = f.querySelector("input"), qq = qi.value; qi.value = ""; return askText(qq); }
   var i = f.querySelector("input"), t = i.value; i.value = ""; sendMsg(f.getAttribute("data-arg"), t);
 });
 window.addEventListener("popstate", function () { if (cur()) { S.stack.pop(); save(); render(); } });

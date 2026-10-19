@@ -27,7 +27,21 @@ try:
     pg.fill('[data-bind="me.date"]', time.strftime("%Y-%m-%d", time.localtime(time.time() + 50 * 864e2)))
     pg.fill('[data-bind="me.budget"]', "1700"); tap('[data-act="dog"]')
     shot("demenagement-infos"); tap('[data-act="finish"]')
-    ok("Pour vous" in pg.inner_text("#app"), "Filtre « Pour vous » actif après l'accueil")
+    ok(pg.locator(".tourcard").count() == 1, "Visite guidée lancée après l'accueil")
+    for i in range(6):
+      shot("visite-%d" % (i + 1)); tap('.tourcard [data-act="tourNext"]')
+    ok(pg.locator(".tourcard").count() == 0, "Visite terminée")
+    ok("Pour vous" in pg.inner_text("#app"), "Filtre « Pour vous » présent")
+    # Zora
+    tap('.asst'); shot("zora")
+    for q, exp in [("je veux résilier mon bail", "Résilier son bail"), ("ma caution ?", "garantie de loyer"), ("trouver des gens pour porter le frigo", "Trouver des bras"), ("ou garer le camion", "place de parc"), ("xyzzy blabla", "pas trouvé")]:
+      pg.fill("#askq", q); pg.locator("#askq").press("Enter"); pg.wait_for_timeout(150)
+      ok(exp.lower() in pg.inner_text("#app").lower(), "Zora comprend : « %s »" % q)
+    shot("zora-reponses"); tap('[data-act="back"]')
+    # Texte agrandi (réglage d’accessibilité Android) : rien ne doit déborder des cartes
+    pg.evaluate("""document.querySelectorAll('#app *').forEach(e=>{e.style.fontSize=(parseFloat(getComputedStyle(e).fontSize)*1.3)+'px'})""")
+    bad = pg.evaluate("""[...document.querySelectorAll('.fcard')].filter(c=>{const r=c.getBoundingClientRect();return [...c.querySelectorAll('*')].some(e=>{const b=e.getBoundingClientRect();return b.width&&b.right>r.right+1})}).length""")
+    ok(bad == 0, "Texte agrandi x1,3 : aucune carte ne déborde (%d)" % bad); shot("texte-agrandi"); pg.evaluate("render()")
     shot("explorer-pour-vous"); tap('[data-act="filter"][data-arg="tout"]'); shot("explorer-tout")
     tap('[data-act="open"][data-arg="d1"]'); ok("Ce qui colle" in pg.inner_text("#app"), "Logement : critères affichés"); shot("logement")
     tap('[data-act="fav"]'); tap('[data-act="compose"]'); shot("composer")
