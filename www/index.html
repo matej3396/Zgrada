@@ -96,6 +96,12 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .want span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .price { font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
 .tab span { white-space: nowrap; }
+.onb { min-height: 100vh; min-height: 100dvh; gap: 12px; padding-top: 12px; }
+.onb .label { margin: 0 0 4px 4px; }
+.input.sm { min-height: 46px; padding: 9px 14px; border-radius: 16px; font-size: 15.5px; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+.scroller.fade { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
 /* Visite guidée */
 .dim { position: fixed; inset: 0; background: rgba(20, 28, 38, .55); z-index: 30; }
 .tourcard { position: fixed; left: 50%; transform: translateX(-50%); width: calc(min(480px, 100vw) - 32px); bottom: 104px; background: var(--card); border-radius: 28px; padding: 20px; z-index: 41; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .25); }
@@ -249,36 +255,19 @@ function tabbar() {
 }
 function topBack(title, right) { return '<div class="top"><button class="ibtn" data-act="back" aria-label="Retour">' + ic("back", 22) + '</button><span class="ttl" style="flex:1;text-align:center">' + (title || "") + "</span>" + (right || '<span style="width:44px"></span>') + "</div>"; }
 
-/* Onboarding */
+/* Onboarding : un seul écran, sans défilement */
 function vOnboard() {
-  var st = S.step;
-  if (st === 0) return '<div class="scr plain">' +
-    '<div class="between"><div class="row">' + LOGO + '<span style="font-size:20px;font-weight:800;letter-spacing:-.02em">zgrada</span></div><button class="small b" style="border:0;background:none" data-act="skip">Passer</button></div>' +
-    '<div style="position:relative;height:330px;max-width:360px;width:100%;margin:6px auto 0">' +
-      '<div style="position:absolute;left:4%;top:18px;width:170px;height:170px;border-radius:50%;background:var(--mint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mint-i)">' + ic("house", 44, null, 1.7) + '<b style="font-size:15px">Un logement</b></div>' +
-      '<div style="position:absolute;right:2%;top:70px;width:150px;height:150px;border-radius:50%;background:var(--peach);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--peach-i)">' + ic("sofa", 40, null, 1.7) + '<b style="font-size:15px">Des meubles</b></div>' +
-      '<div style="position:absolute;left:27%;top:186px;width:146px;height:146px;border-radius:50%;background:var(--lav);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--lav-i)">' + ic("hand", 40, null, 1.7) + '<b style="font-size:15px">Un coup de main</b></div>' +
-      '<div style="position:absolute;right:13%;top:10px;width:46px;height:46px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center">' + ic("swap", 24, null, 2.3) + "</div></div>" +
-    '<h1 class="h1" style="font-size:32px">Un déménagement, c’est plein de choses qui changent de mains.</h1>' +
-    '<p class="sub">Vous laissez un appartement, un canapé, un samedi libre. Quelqu’un près de chez vous a exactement ce qu’il vous faut.</p>' +
-    '<div style="flex:1"></div><div class="dots"><i class="on"></i><i></i><i></i></div>' +
-    '<button class="btn y" data-act="step" data-arg="1">C’est parti</button></div>';
-  if (st === 1) {
-    var chips = function (list, key) { return '<div class="wrap">' + list.map(function (x) { var on = S.me[key].indexOf(x[0]) >= 0; return '<button class="chip' + (on ? " on" : "") + '" data-act="toggle" data-arg="' + key + "|" + esc(x[0]) + '">' + ic(x[1], 18, null, 2) + esc(x[0]) + "</button>"; }).join("") + "</div>"; };
-    return '<div class="scr plain"><div class="top"><button class="ibtn" data-act="step" data-arg="0" aria-label="Retour">' + ic("back", 22) + '</button><div class="dots"><i></i><i class="on"></i><i></i></div><span style="width:44px"></span></div>' +
-      '<h1 class="h1">Qu’avez-vous à échanger&#8239;?</h1>' + chips(HAVE, "have") +
-      '<h2 class="h2" style="margin-top:6px">Et vous cherchez…</h2>' + chips(WANT, "want") +
-      '<div class="card flat row" style="background:var(--butter)">' + ic("pin", 22, "var(--butter-i)") + '<div class="grow"><b style="font-size:15px">Autour de</b><input class="input" style="min-height:40px;margin-top:6px;border-color:transparent" data-bind="me.zone" value="' + esc(S.me.zone) + '" aria-label="Votre ville"></div></div>' +
-      '<div style="flex:1"></div><button class="btn" data-act="step" data-arg="2">Continuer</button></div>';
-  }
   var m = S.me, flat = m.want.indexOf("Un logement") >= 0;
-  return '<div class="scr plain"><div class="top"><button class="ibtn" data-act="step" data-arg="1" aria-label="Retour">' + ic("back", 22) + '</button><div class="dots"><i></i><i></i><i class="on"></i></div><span style="width:44px"></span></div>' +
-    '<h1 class="h1">Et vous, c’est quand&#8239;?</h1><p class="sub">Pour vous proposer les bons échanges au bon moment. Tout reste sur votre téléphone.</p><div class="card flat row" style="background:var(--sky);padding:12px 14px">' + ic("pin", 20, "var(--sky-i)") + '<span class="small grow" style="color:var(--sky-i)">Zgrada est faite pour les déménagements en Suisse, d’une commune à l’autre.</span></div>' +
-    '<div class="label">Votre prénom</div><input class="input" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Matej" autocomplete="given-name">' +
-    '<div class="row"><div class="grow"><div class="label">De</div><input class="input" data-bind="me.from" value="' + esc(m.from) + '" placeholder="Clarens"></div><div class="grow"><div class="label">Vers</div><input class="input" data-bind="me.to" value="' + esc(m.to) + '" placeholder="Lausanne"></div></div>' +
-    '<div class="label">Date du déménagement</div><input class="input" type="date" data-bind="me.date" value="' + esc(m.date) + '">' +
-    (flat ? '<div class="card col"><b>Le logement que vous cherchez</b><div class="row"><div class="grow"><div class="label">Pièces min.</div><select class="input" data-bind="me.rooms">' + [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option value=\"" + r + "\"" + (r === +m.rooms ? " selected" : "") + ">" + num(r) + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Loyer max.</div><input class="input" inputmode="numeric" data-bind="me.budget" value="' + esc(m.budget) + '"></div></div>' +
-      '<button class="chip sm' + (m.dog ? " on" : "") + '" data-act="dog" style="align-self:flex-start">' + (m.dog ? ic("check", 16, null, 2.6) : "") + "J’ai un chien</button></div>" : "") +
+  var chips = function (list, key) { return '<div class="scroller fade">' + list.map(function (x) { var on = m[key].indexOf(x[0]) >= 0; return '<button class="chip sm' + (on ? " on" : "") + '" data-act="toggle" data-arg="' + key + "|" + esc(x[0]) + '">' + ic(x[1], 16, null, 2) + esc(x[0]) + "</button>"; }).join("") + "</div>"; };
+  return '<div class="scr plain onb">' +
+    '<div class="between"><div class="row">' + LOGO + '<span style="font-size:19px;font-weight:800;letter-spacing:-.02em">zgrada</span></div><button class="small b" style="border:0;background:none;padding:10px 0" data-act="skip">Passer</button></div>' +
+    '<div><h1 class="h1" style="font-size:25px">Votre déménagement, plein de choses à échanger.</h1><div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">' + pill("Logement", "mint", "house") + pill("Meubles", "peach", "sofa") + pill("Coups de main", "lav", "hand") + "</div></div>" +
+    '<div class="col" style="gap:6px"><div class="label">J’ai à échanger</div>' + chips(HAVE, "have") + "</div>" +
+    '<div class="col" style="gap:6px"><div class="label">Je cherche</div>' + chips(WANT, "want") + "</div>" +
+    '<div class="g2"><div><div class="label">Prénom</div><input class="input sm" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Matej" autocomplete="given-name"></div><div><div class="label">Date</div><input class="input sm" type="date" data-bind="me.date" value="' + esc(m.date) + '"></div>' +
+    '<div><div class="label">De</div><input class="input sm" data-bind="me.from" value="' + esc(m.from) + '" placeholder="Clarens"></div><div><div class="label">Vers</div><input class="input sm" data-bind="me.to" value="' + esc(m.to) + '" placeholder="Lausanne"></div></div>' +
+    (flat ? '<div class="g3"><div><div class="label">Pièces min.</div><select class="input sm" data-bind="me.rooms">' + [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return '<option value="' + r + '"' + (r === +m.rooms ? " selected" : "") + ">" + num(r) + "</option>"; }).join("") + '</select></div><div><div class="label">Loyer max.</div><input class="input sm" inputmode="numeric" data-bind="me.budget" value="' + esc(m.budget) + '"></div><button class="chip sm' + (m.dog ? " on" : "") + '" data-act="dog" style="align-self:end;min-height:46px;justify-content:center">' + (m.dog ? ic("check", 15, null, 2.6) : "") + "Chien</button></div>" : "") +
+    '<div class="small" style="display:flex;gap:6px;align-items:center">' + ic("pin", 15) + "En Suisse, d’une commune à l’autre. Tout reste sur votre téléphone.</div>" +
     '<div style="flex:1"></div><button class="btn y" data-act="finish">Voir les échanges possibles</button></div>';
 }
 
