@@ -22,6 +22,9 @@ try:
     shot("accueil")
     fits = lambda: pg.evaluate("document.scrollingElement.scrollHeight <= innerHeight + 1")
     ok(fits(), "Accueil : tout tient sur un écran (%s)" % pg.evaluate("[document.scrollingElement.scrollHeight, innerHeight]"))
+    pg.evaluate("document.querySelector('.scroller').scrollLeft=200"); tap('[data-arg="have|Mes bras"]')
+    ok(pg.evaluate("document.querySelector('.scroller').scrollLeft") > 100, "Accueil : la liste reste en place après un toucher")
+    tap('[data-arg="have|Mes bras"]')
     for c in ["have|Mon appartement", "have|Un canapé", "have|Mes bras", "want|Un logement", "want|De l’aide pour porter", "want|Une camionnette"]:
       pg.locator('[data-arg="%s"]' % c).scroll_into_view_if_needed(); tap('[data-arg="%s"]' % c)
     pg.fill('[data-bind="me.name"]', "Matej"); pg.fill('[data-bind="me.from"]', "Clarens"); pg.fill('[data-bind="me.to"]', "Lausanne")

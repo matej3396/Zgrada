@@ -699,8 +699,11 @@ function view() {
 }
 function render() {
   var f = document.activeElement, fid = f && (f.id || f.getAttribute("data-bind")), pos = f && f.selectionStart;
+  /* Les listes qui glissent gardent leur position quand l’écran est redessiné */
+  var sl = Array.prototype.map.call(app.querySelectorAll(".scroller"), function (x) { return x.scrollLeft; }), sv = JSON.stringify(cur()) + S.tab + S.step;
   try { app.innerHTML = view() + (S.step >= 3 && S.tour >= 0 && !cur() ? tourHtml() : "") + (T.toast ? '<div class="toast" role="status">' + esc(T.toast) + "</div>" : ""); }
   catch (e) { console.error(e); app.innerHTML = '<div class="scr plain"><h1 class="h1">Oups, un écran n’a pas pu s’afficher.</h1><p class="sub">' + esc(e.message) + '</p><button class="btn y" data-act="recover">Revenir à l’accueil</button></div>'; }
+  if (sv === JSON.stringify(cur()) + S.tab + S.step) Array.prototype.forEach.call(app.querySelectorAll(".scroller"), function (x, i) { if (sl[i]) x.scrollLeft = sl[i]; });
   if (fid) { var el = document.getElementById(fid) || app.querySelector('[data-bind="' + fid + '"]'); if (el && el.type !== "date" && el.tagName !== "SELECT") { el.focus(); try { if (pos != null) el.setSelectionRange(pos, pos); } catch (e) {} } }
 }
 
