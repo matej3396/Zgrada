@@ -272,7 +272,7 @@ function vOnboard() {
   }
   var m = S.me, flat = m.want.indexOf("Un logement") >= 0;
   return '<div class="scr plain"><div class="top"><button class="ibtn" data-act="step" data-arg="1" aria-label="Retour">' + ic("back", 22) + '</button><div class="dots"><i></i><i></i><i class="on"></i></div><span style="width:44px"></span></div>' +
-    '<h1 class="h1">Et vous, c’est quand&#8239;?</h1><p class="sub">Pour vous proposer les bons échanges au bon moment. Tout reste sur votre téléphone.</p>' +
+    '<h1 class="h1">Et vous, c’est quand&#8239;?</h1><p class="sub">Pour vous proposer les bons échanges au bon moment. Tout reste sur votre téléphone.</p><div class="card flat row" style="background:var(--sky);padding:12px 14px">' + ic("pin", 20, "var(--sky-i)") + '<span class="small grow" style="color:var(--sky-i)">Zgrada est faite pour les déménagements en Suisse, d’une commune à l’autre.</span></div>' +
     '<div class="label">Votre prénom</div><input class="input" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Matej" autocomplete="given-name">' +
     '<div class="row"><div class="grow"><div class="label">De</div><input class="input" data-bind="me.from" value="' + esc(m.from) + '" placeholder="Clarens"></div><div class="grow"><div class="label">Vers</div><input class="input" data-bind="me.to" value="' + esc(m.to) + '" placeholder="Lausanne"></div></div>' +
     '<div class="label">Date du déménagement</div><input class="input" type="date" data-bind="me.date" value="' + esc(m.date) + '">' +
