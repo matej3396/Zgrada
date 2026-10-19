@@ -142,6 +142,7 @@ var I = {
   coin: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 10h3.8a1.7 1.7 0 0 1 0 3.4H10.7a1.7 1.7 0 0 0 0 3.4h3.8"/>',
   list: '<path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.5" cy="7" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17" r="1"/>',
   trash: '<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   copy: '<rect x="8" y="8" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A1.5 1.5 0 0 1 6.5 5H15"/>'
 };
 function ic(n, s, c, w) { return '<svg aria-hidden="true" width="' + (s || 20) + '" height="' + (s || 20) + '" viewBox="0 0 24 24" fill="none" stroke="' + (c || "currentColor") + '" stroke-width="' + (w || 1.9) + '" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">' + I[n] + "</svg>"; }
@@ -239,7 +240,7 @@ function score(o) {
   var t = (o.title + " " + o.desc).toLowerCase() + " ";
   return S.me.want.some(function (w) { return (KEYS[w] || []).some(function (k) { return t.indexOf(k) >= 0; }); }) ? 1 : 0;
 }
-function forYou() { return S.offers.filter(function (o) { return !o.gone && score(o) >= .75; }); }
+function forYou() { return S.offers.filter(function (o) { return !o.gone && !(S.hideDemo && o.demo) && score(o) >= .75; }); }
 
 /* ---------- Écrans ---------- */
 function tabbar() {
@@ -292,7 +293,7 @@ function feedCard(o) {
 }
 function vExplorer() {
   var fy = forYou(), f = S.filter, q = (S.q || "").toLowerCase().trim();
-  var list = S.offers.filter(function (o) { return !o.gone; }).filter(function (o) {
+  var list = S.offers.filter(function (o) { return !o.gone && !(S.hideDemo && o.demo); }).filter(function (o) {
     if (f === "pour" && fy.indexOf(o) < 0) return false;
     if (KIND[f] && o.kind !== f) return false;
     if (q && (o.title + " " + o.where + " " + o.wants + " " + (o.desc || "")).toLowerCase().indexOf(q) < 0) return false;
@@ -370,7 +371,7 @@ function vMessages() {
   var L = S.convs.slice().sort(function (a, b) { return b.ts - a.ts; });
   return '<div class="scr"><div class="top"><div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Messages</div></div>' +
     (L.length ? L.map(function (c) {
-      var o = offer(c.offer) || {}, last = c.msgs[c.msgs.length - 1] || {}, st = c.status === "deal" ? pill("Rendez-vous", "lav", "cal") : c.status === "done" ? pill("Échangé", "mint", "check") : "";
+      var o = offer(c.offer) || {}, last = c.msgs[c.msgs.length - 1] || {}, st = c.status === "deal" ? pill("Rendez-vous", "lav", "cal") : c.status === "done" ? pill("Échangé", "mint", "check") : c.status === "flake" ? pill("Faux bond", "peach") : "";
       return '<button class="li" data-act="thread" data-arg="' + c.id + '">' + av(initials(c.with), c.col, 48) + '<div class="grow"><div class="between"><b style="font-size:15.5px">' + esc(c.with) + "</b>" + (c.unread ? '<span class="pill" style="background:var(--yellow);color:var(--ink);padding:3px 9px">' + c.unread + "</span>" : st) + '</div><div class="small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(o.title || "") + " · " + esc(last.card ? "Proposition de rendez-vous" : last.t || "") + "</div></div></button>";
     }).join("") : '<div class="card col" style="align-items:center;text-align:center;padding:28px 18px">' + tile("chat", "lav", 70) + '<b style="font-size:17px">Pas encore de conversation</b><p class="sub">Trouvez un échange qui vous plaît et faites une proposition.</p><button class="btn y sm" data-act="tab" data-arg="explorer">Explorer</button></div>') +
     "</div>" + tabbar();
@@ -388,7 +389,7 @@ function vThread(p) {
     return '<div class="bubble ' + (m.me ? "me" : "them") + '">' + esc(m.t) + "</div>";
   }).join("");
   var banner = c.status === "deal" ? '<div class="card flat col" style="background:var(--lav)"><div class="row">' + ic("cal", 20, "var(--lav-i)") + '<b class="grow">' + fmtDay(c.when) + '</b></div><span class="small" style="color:var(--lav-i)">2 crédits chacun en gage. Une fois l’échange fait, confirmez : 1 crédit vous revient.</span><button class="btn sm" data-act="done" data-arg="' + c.id + '">' + ic("check", 18, null, 2.6) + "L’échange a eu lieu</button></div>"
-    : c.status === "done" ? '<div class="card flat row" style="background:var(--mint)">' + ic("check", 22, "var(--mint-i)", 2.6) + '<b class="grow" style="color:var(--mint-i)">Échange réalisé, merci&#8239;!</b></div>' : "";
+    : c.status === "flake" ? '<div class="card flat row" style="background:var(--peach)">' + ic("x", 22, "var(--peach-i)", 2.6) + '<b class="grow" style="color:var(--peach-i)">' + esc(c.with) + ' n’est pas venu : sa mise vous revient.</b></div>' : c.status === "done" ? '<div class="card flat row" style="background:var(--mint)">' + ic("check", 22, "var(--mint-i)", 2.6) + '<b class="grow" style="color:var(--mint-i)">Échange réalisé, merci&#8239;!</b></div>' : "";
   var typing = T.typing[c.id] ? '<div class="bubble them small" style="color:var(--ink-3)">' + esc(c.with) + " écrit…</div>" : "";
   return '<div class="scr plain" style="padding-bottom:calc(150px + env(safe-area-inset-bottom))"><div class="top"><button class="ibtn" data-act="back" aria-label="Retour">' + ic("back", 22) + '</button><div class="row grow">' + av(initials(c.with), c.col, 40) + "<div><b style=\"font-size:16px\">" + esc(c.with) + '</b><div class="small">' + (c.demo ? "Profil d’exemple · répond automatiquement" : "Membre Zgrada") + "</div></div></div></div>" +
     '<button class="card flat row" style="padding:10px;gap:10px;background:var(--butter);border:0;text-align:left;width:100%" data-act="open" data-arg="' + c.offer + '">' + tile(k.icon, k.col, 44, o.photo) + '<div class="grow"><b style="font-size:14.5px">' + esc(o.title) + " ⇄ " + esc(c.give.join(" + ") || "à discuter") + '</b><div class="small" style="color:var(--butter-i)">' + (c.status === "open" ? "Proposition envoyée" : c.status === "deal" ? "Échange accepté" : c.status === "done" ? "Échange réalisé" : "Conversation") + "</div></div></button>" +
@@ -452,13 +453,12 @@ function vEtapes() {
 /* Moi */
 function vMoi() {
   var mine = S.offers.filter(function (o) { return o.mine && !o.gone; }), favs = S.favs.map(offer).filter(Boolean), m = S.me;
-  return '<div class="scr"><div class="col" style="align-items:center;gap:8px;margin-top:8px">' + (m.name ? av(initials(m.name), "sky", 92) : '<div class="av" style="width:92px;height:92px;background:var(--sky);color:var(--sky-i)">' + ic("user", 44) + "</div>") + '<b style="font-size:23px;letter-spacing:-.02em">' + esc(m.name || "Vous") + '</b>' + (m.name ? "" : '<button class="chip sm" data-act="editProfile">Ajouter mon prénom</button>') + '<span class="small">' + esc(m.zone || "") + "</span></div>" +
+  return '<div class="scr"><div class="top"><span></span><button class="ibtn" data-act="settings" aria-label="Réglages">' + ic("gear", 21) + '</button></div><div class="col" style="align-items:center;gap:8px;margin-top:-30px">' + (m.name ? av(initials(m.name), "sky", 92) : '<div class="av" style="width:92px;height:92px;background:var(--sky);color:var(--sky-i)">' + ic("user", 44) + "</div>") + '<b style="font-size:23px;letter-spacing:-.02em">' + esc(m.name || "Vous") + '</b>' + (m.name ? "" : '<button class="chip sm" data-act="editProfile">Ajouter mon prénom</button>') + '<span class="small">' + esc(m.zone || "") + "</span></div>" +
     '<div class="row" style="gap:10px"><div class="card grow" style="text-align:center;padding:14px"><b style="font-size:26px">' + S.deals + '</b><div class="small">échange' + (S.deals > 1 ? "s" : "") + '</div></div><div class="card grow" style="text-align:center;padding:14px"><b style="font-size:26px">' + mine.length + '</b><div class="small">annonce' + (mine.length > 1 ? "s" : "") + '</div></div><button class="card grow" style="text-align:center;padding:14px;background:var(--ink);color:#fff;border:0" data-act="credits"><b style="font-size:26px">' + S.credits + '</b><div class="small" style="color:#B9C4D0">crédits</div></button></div>' +
     '<h2 class="h2">Mes annonces</h2>' + (mine.length ? mine.map(feedCard).join("") : '<button class="li" data-act="publish">' + tile("plus", "butter", 44) + '<div class="grow"><b>Publier ce que vous avez</b><div class="small">Un meuble, un coup de main, votre appartement</div></div></button>') +
     (favs.length ? '<h2 class="h2">Gardés</h2>' + favs.map(feedCard).join("") : "") +
     '<div class="card flat row" style="background:var(--butter)">' + tile("spark", "butter", 44) + '<div class="grow"><b style="font-size:15px">Invitez un ami : +3 crédits</b><div class="small" style="color:var(--butter-i)">Pour vous deux · code ' + S.code + '</div></div><button class="ibtn" style="width:40px;height:40px" data-act="copy" aria-label="Copier le code">' + ic("copy", 18) + "</button></div>" +
-    '<h2 class="h2">Aide</h2><button class="li" data-act="tour">' + tile("compass", "mint", 40) + '<b class="grow">Revoir la visite des onglets</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="assist"><div class="av" style="width:40px;height:40px;background:var(--butter)">' + mascot(32) + '</div><b class="grow">Poser une question à Zora</b>' + ic("next", 18, "#B0B8C2") + '</button><h2 class="h2">Réglages</h2><button class="li" data-act="editProfile">' + tile("user", "sky", 40) + '<b class="grow">Modifier mes envies et mon déménagement</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="reset">' + tile("trash", "peach", 40) + '<div class="grow"><b>Tout effacer</b><div class="small">Vos données ne sont que sur ce téléphone</div></div></button>' +
-    '<a class="small" style="text-align:center;padding:6px" href="v1.html">Ancienne version de Zgrada</a></div>' + tabbar();
+    '<h2 class="h2">Aide</h2><button class="li" data-act="tour">' + tile("compass", "mint", 40) + '<b class="grow">Revoir la visite des onglets</b>' + ic("next", 18, "#B0B8C2") + '</button><button class="li" data-act="assist"><div class="av" style="width:40px;height:40px;background:var(--butter)">' + mascot(32) + '</div><b class="grow">Poser une question à Zora</b>' + ic("next", 18, "#B0B8C2") + '</button><h2 class="h2">Réglages</h2>' + setRow("gear", "sky", "Compte, données et confidentialité", "Télécharger ou supprimer vos données", "settings") + (S.dev ? setRow("spark", "lav", "Développeur", "Outils de test", "dev") : "") + "</div>" + tabbar();
 }
 function vCredits() {
   var earn = [["spark", "butter", "Bienvenue", "+5", true], ["plus", "mint", "Votre première annonce", "+2", !!S.bonusPub], ["swap", "lav", "Chaque échange réalisé", "+1 rendu sur votre mise", S.deals > 0], ["user", "sky", "Un ami vous rejoint", "+3 pour vous, +3 pour lui", S.refUsed || false]];
@@ -606,8 +606,92 @@ function tourHtml() {
   return '<div class="dim" data-act="tourNext"></div><div class="tourcard" style="--ax:' + ax + ";" + (st[0] === "asst" ? "bottom:172px" : "") + '"><div class="row">' + (st[0] === "asst" ? '<div class="av" style="width:52px;height:52px;background:var(--butter)">' + mascot(42) + "</div>" : tile(st[1], st[2], 52)) + '<div class="grow"><div class="small b">' + (i + 1) + " sur " + TOUR.length + '</div><b style="font-size:19px;letter-spacing:-.01em">' + st[3] + '</b></div></div><p class="sub" style="margin:0">' + st[4] + '</p><div class="row"><button class="btn ghost sm" style="flex:1" data-act="tourEnd">Passer</button><button class="btn y sm" style="flex:1.4" data-act="tourNext">' + (i === TOUR.length - 1 ? "C’est parti" : "Suivant") + "</button></div></div>";
 }
 
+/* ---------- Réglages : compte, données, développeur ----------
+   L’adresse du développeur n’est jamais écrite en clair (le dépôt est public) : seule son empreinte SHA-256 est gardée. */
+var DEV_HASH = "efef837e17754973e5e6c838395e23a2667b90d1980a2d16cabeecdd2bb72fca";
+var VERSION = "2.6";
+function checkDev(mail) {
+  var m = String(mail || "").trim().toLowerCase();
+  if (!m || !(window.crypto && crypto.subtle && window.TextEncoder)) { if (S.dev) { S.dev = false; save(); render(); } return; }
+  crypto.subtle.digest("SHA-256", new TextEncoder().encode(m)).then(function (b) {
+    var h = Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join(""), on = h === DEV_HASH;
+    if (on !== !!S.dev) { S.dev = on; save(); render(); if (on) toast("Mode développeur activé"); }
+  });
+}
+function bytes() { try { return new Blob([localStorage.getItem(KEY) || ""]).size; } catch (e) { return 0; } }
+function kb(n) { return n < 1024 ? n + " o" : n < 1048576 ? Math.round(n / 1024) + " Ko" : (n / 1048576).toFixed(1).replace(".", ",") + " Mo"; }
+function setRow(icon, col, title, sub, act, arg, danger) {
+  return '<button class="li" data-act="' + act + '"' + (arg ? ' data-arg="' + arg + '"' : "") + ">" + tile(icon, col, 40) + '<div class="grow"><b style="font-size:15px' + (danger ? ";color:var(--red)" : "") + '">' + title + "</b>" + (sub ? '<div class="small">' + sub + "</div>" : "") + "</div>" + ic("next", 18, "#B0B8C2") + "</button>";
+}
+function vSettings() {
+  var m = S.me, mine = S.offers.filter(function (o) { return o.mine && !o.gone; }), photos = S.offers.filter(function (o) { return o.mine && o.photo; }).length;
+  return '<div class="scr plain">' + topBack("Réglages") +
+    '<h2 class="h2">Mon compte</h2><div class="card col">' +
+      '<div class="label">Prénom</div><input class="input" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Votre prénom" autocomplete="given-name">' +
+      '<div class="label">Ville</div><input class="input" data-bind="me.zone" value="' + esc(m.zone) + '" placeholder="Lausanne">' +
+      '<div class="label">E-mail</div><input class="input" type="email" data-bind="me.email" value="' + esc(m.email || "") + '" placeholder="vous@exemple.ch" autocomplete="email" inputmode="email">' +
+      '<span class="small">Compte local : tout est sur ce téléphone. L’e-mail servira à vous connecter quand Zgrada aura son serveur.</span></div>' +
+    setRow("user", "sky", "Mes envies et mon déménagement", "Ce que j’ai, ce que je cherche, la date", "editProfile") +
+    '<h2 class="h2">Mes données</h2><div class="card col" style="gap:8px">' +
+      [["Annonces", mine.length], ["Conversations", S.convs.length], ["Photos", photos], ["Étapes cochées", Object.keys(S.tasks).filter(function (k) { return S.tasks[k]; }).length], ["Place utilisée", kb(bytes())]].map(function (r) { return '<div class="between"><span class="sub">' + r[0] + "</span><b>" + r[1] + "</b></div>"; }).join("") +
+      '<span class="small">Rien n’est envoyé sur un serveur. Si vous désinstallez l’app ou effacez Chrome, tout disparaît.</span></div>' +
+    setRow("copy", "mint", "Télécharger mes données", "Un fichier avec tout ce que l’app garde sur vous", "exportData") +
+    setRow("trash", "butter", "Supprimer mes données", "Annonces, messages, photos, étapes. Le profil reste.", "wipeData") +
+    setRow("x", "peach", "Supprimer mon compte", "Tout effacer et repartir de zéro", "deleteAccount", null, true) +
+    (S.dev ? '<h2 class="h2">Développeur</h2>' + setRow("spark", "lav", "Outils développeur", "Tester l’accueil, les scénarios, le temps…", "dev") : "") +
+    '<div class="small" style="text-align:center;padding:8px">Zgrada ' + VERSION + ' · <a href="v1.html">ancienne version</a></div></div>';
+}
+function devBtn(l, act, arg) { return '<button class="chip sm" data-act="' + act + '"' + (arg ? ' data-arg="' + arg + '"' : "") + ">" + l + "</button>"; }
+function vDev() {
+  var sec = function (t, sub, btns) { return '<div class="card col" style="gap:10px"><b style="font-size:16px">' + t + '</b><span class="small">' + sub + '</span><div class="wrap">' + btns + "</div></div>"; };
+  return '<div class="scr plain">' + topBack("Développeur") +
+    '<div class="card flat row" style="background:var(--lav)">' + tile("spark", "lav", 44) + '<div class="grow"><b>Mode test</b><div class="small" style="color:var(--lav-i)">Tout se passe sur ce téléphone. Rien ne touche d’autres utilisateurs.</div></div></div>' +
+    sec("Intro et aide", "Revoir ce que voit un nouvel utilisateur, sans perdre vos données.", devBtn("Accueil complet", "dv", "intro") + devBtn("Visite des onglets", "tour") + devBtn("Zora", "assist") + devBtn("Nouvel utilisateur", "dv", "fresh")) +
+    sec("Scénarios", "Déclencher les situations sans attendre une vraie personne.", devBtn("Profil de démo", "dv", "demo") + devBtn("Message reçu", "dv", "msg") + devBtn("Proposition reçue", "dv", "offer") + devBtn("Rendez-vous demain", "dv", "rdv") + devBtn("Faux bond", "dv", "flake") + devBtn("Demande de devis", "devis", "nettoyage")) +
+    sec("Temps", "Déplacer la date du déménagement pour voir les étapes changer.", devBtn("Dans 90 jours", "dv", "d90") + devBtn("Dans 7 jours", "dv", "d7") + devBtn("Jour J", "dv", "d0") + devBtn("Passé (J+3)", "dv", "dm3") + devBtn("Étapes à zéro", "dv", "tasks0")) +
+    sec("Crédits", "Solde actuel : " + S.credits + ". Tester un gage impossible ou un solde confortable.", devBtn("+10 crédits", "dv", "c10") + devBtn("Mettre à 0", "dv", "c0")) +
+    sec("Annonces", "Voir l’app vide comme au premier jour d’une nouvelle ville.", devBtn(S.hideDemo ? "Afficher les exemples" : "Masquer les exemples", "dv", "demoToggle") + devBtn("Remettre les exemples", "dv", "reseed") + devBtn("Tout publier en exemple", "dv", "mineDemo")) +
+    sec("Technique", "Version " + VERSION + " · " + kb(bytes()) + " utilisés.", devBtn("Forcer la mise à jour", "dv", "update") + devBtn("Tester l’écran d’erreur", "dv", "crash") + devBtn(T.raw ? "Cacher les données" : "Voir les données brutes", "dv", "raw")) +
+    (T.raw ? '<pre style="white-space:pre-wrap;word-break:break-all;font-size:11px;background:#fff;border-radius:16px;padding:12px;max-height:340px;overflow:auto">' + esc(JSON.stringify(S, function (k, v) { return k === "photo" && v ? "[photo " + kb(v.length) + "]" : v; }, 1)).slice(0, 20000) + "</pre>" : "") +
+    "</div>";
+}
+function devAct(a) {
+  var t = today(), demoConv = function (who, col, offerId, status) { var c = { id: "c" + Date.now() + Math.floor(Math.random() * 99), offer: offerId, with: who, col: col, demo: true, give: [], status: status || "chat", ts: Date.now(), msgs: [], unread: 0 }; S.convs.push(c); return c; };
+  if (a === "intro") { S.step = 0; S.stack = []; save(); render(); return window.scrollTo(0, 0); }
+  if (a === "fresh") { if (!confirm("Repartir comme un nouvel utilisateur ? Vos données de test seront effacées.")) return; var mail = S.me.email, dev = S.dev; S = fresh(); S.me.email = mail; S.dev = dev; save(); render(); return; }
+  if (a === "demo") { S.me = { name: "Matej", have: ["Mon appartement", "Un canapé", "Mes bras"], want: ["Un logement", "De l’aide pour porter", "Une camionnette"], zone: "Lausanne", radius: 15, from: "Clarens", to: "Lausanne", date: iso(addDays(t, 50)), rooms: 3.5, budget: 1800, dog: true, email: S.me.email }; S.step = 3; save(); return toast("Profil de démo chargé"); }
+  if (a === "msg") { var c = demoConv("Samir", "sky", "d2"); c.msgs.push({ t: "Salut ! Le canapé est toujours dispo si ça t’intéresse 🙂", me: false, ts: Date.now() }); c.unread = 1; save(); return toast("Samir vous a écrit · voir Messages"); }
+  if (a === "offer") {
+    var o = S.offers.filter(function (x) { return x.mine && !x.gone; })[0];
+    if (!o) { o = { id: "m" + Date.now(), kind: "objet", title: "Étagère en bois (test)", where: S.me.zone || "Lausanne", km: 0, wants: "Un coup de main (2 h)", owner: S.me.name || "Vous", ocol: "sky", mine: true, desc: "Annonce créée par le mode développeur.", created: Date.now() }; S.offers.unshift(o); }
+    var c2 = demoConv("Nadia", "peach", o.id, "open"); c2.give = ["Une heure d’aide au jardin"];
+    c2.msgs.push({ t: "Bonjour ! Votre « " + o.title + " » m’intéresse. Je vous propose une heure d’aide au jardin.", me: false, ts: Date.now() }, { card: { when: addDays(t, 2).setHours(18, 30, 0, 0), where: o.where }, me: false, ts: Date.now() });
+    c2.unread = 1; save(); return toast("Nadia propose un échange · voir Messages");
+  }
+  if (a === "rdv") { var c3 = demoConv("Jonas", "mint", "d3", "deal"); c3.give = ["Une étagère"]; c3.when = addDays(t, 1).setHours(10, 0, 0, 0); c3.where = "Pully"; c3.msgs.push({ t: "À demain 10 h devant chez moi !", me: false, ts: Date.now() }); S.credits = Math.max(0, S.credits - 2); S.ledger.push({ t: "Mise · test rendez-vous", n: -2, ts: Date.now() }); save(); return toast("Rendez-vous demain avec Jonas · −2 crédits en gage"); }
+  if (a === "flake") {
+    var d = S.convs.filter(function (c) { return c.status === "deal"; })[0];
+    if (!d) return toast("Créez d’abord un rendez-vous");
+    d.status = "flake"; d.msgs.push({ t: "Désolé, je n’ai pas pu venir…", me: false, ts: Date.now() }); S.credits += 4; S.ledger.push({ t: "Faux bond de " + d.with + " : sa mise vous revient", n: 4, ts: Date.now() }); save(); return toast(d.with + " n’est pas venu · +4 crédits (votre mise + la sienne)");
+  }
+  if (/^d(90|7|0|m3)$/.test(a)) { S.me.date = iso(addDays(t, { d90: 90, d7: 7, d0: 0, dm3: -3 }[a])); save(); S.stack = []; S.tab = "etapes"; save(); return render(); }
+  if (a === "tasks0") { S.tasks = {}; save(); return toast("Étapes remises à zéro"); }
+  if (a === "c10") { S.credits += 10; S.ledger.push({ t: "Test développeur", n: 10, ts: Date.now() }); save(); return render(); }
+  if (a === "c0") { if (S.credits) S.ledger.push({ t: "Test développeur", n: -S.credits, ts: Date.now() }); S.credits = 0; save(); return render(); }
+  if (a === "demoToggle") { S.hideDemo = !S.hideDemo; save(); return toast(S.hideDemo ? "Exemples masqués" : "Exemples affichés"); }
+  if (a === "reseed") { S.offers = S.offers.filter(function (o) { return !o.demo; }).concat(demoOffers()); S.hideDemo = false; save(); return toast("Annonces d’exemple remises"); }
+  if (a === "mineDemo") { demoOffers().slice(0, 3).forEach(function (o) { o.id = "m" + o.id + Date.now(); o.mine = true; o.demo = false; o.owner = S.me.name || "Vous"; o.km = 0; S.offers.unshift(o); }); save(); return toast("3 annonces ajoutées à votre profil"); }
+  if (a === "raw") { T.raw = !T.raw; return render(); }
+  if (a === "crash") { T.crash = true; render(); T.crash = false; return; }
+  if (a === "update") {
+    var done = function () { location.reload(); };
+    try { Promise.all([navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (r) { return Promise.all(r.map(function (x) { return x.unregister(); })); }) : 0, window.caches ? caches.keys().then(function (k) { return Promise.all(k.map(function (x) { return caches.delete(x); })); }) : 0]).then(done, done); } catch (e) { done(); }
+  }
+}
+
 /* ---------- Routeur ---------- */
 function view() {
+  if (T.crash) throw new Error("Écran d’erreur testé depuis le mode développeur");
   if (S.step < 3) return vOnboard();
   var c = cur();
   if (c) {
@@ -619,6 +703,8 @@ function view() {
     if (c.v === "credits") return vCredits();
     if (c.v === "assist") return vAssist();
     if (c.v === "devis") return vDevis(c.p);
+    if (c.v === "settings") return vSettings();
+    if (c.v === "dev") return S.dev ? vDev() : vSettings();
   }
   return { explorer: vExplorer, etapes: vEtapes, messages: vMessages, moi: vMoi }[S.tab]();
 }
@@ -712,6 +798,23 @@ var A = {
   dcancel: function (k) { S.quotes = (S.quotes || []).filter(function (q) { return q.svc !== k; }); T.devis.ok = false; save(); render(); },
   ref: function () { var v = (document.getElementById("ref").value || "").trim().toUpperCase(); if (!/^[A-Z0-9]{6}$/.test(v)) return toast("Le code fait 6 lettres ou chiffres"); if (v === S.code) return toast("C’est votre propre code"); S.refUsed = true; S.credits += 3; S.ledger.push({ t: "Code d’un ami", n: 3, ts: Date.now() }); save(); toast("+3 crédits"); },
   copy: function () { var t = "Rejoins-moi sur Zgrada pour échanger meubles, coups de main et logements. Mon code : " + S.code + " (3 crédits offerts)"; try { navigator.clipboard.writeText(t).then(function () { toast("Copié, à coller dans un message"); }, function () { toast("Votre code : " + S.code); }); } catch (e) { toast("Votre code : " + S.code); } },
+  settings: function () { go("settings"); },
+  dev: function () { if (S.dev) go("dev"); },
+  dv: devAct,
+  exportData: function () {
+    var data = JSON.stringify({ app: "Zgrada", version: VERSION, exporte_le: new Date().toISOString(), donnees: S }, null, 2), a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = "zgrada-mes-donnees-" + iso(new Date()) + ".json";
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast("Fichier téléchargé");
+  },
+  wipeData: function () {
+    if (!confirm("Supprimer vos annonces, messages, photos, étapes et favoris ? Votre profil et vos crédits restent.")) return;
+    S.offers = S.offers.filter(function (o) { return !o.mine; }); S.convs = []; S.favs = []; S.tasks = {}; S.quotes = []; S.assist = []; save(); toast("Données supprimées"); render();
+  },
+  deleteAccount: function () {
+    var w = prompt("Tout sera effacé de ce téléphone, sans retour possible. Tapez SUPPRIMER pour confirmer.");
+    if (!w || w.trim().toUpperCase() !== "SUPPRIMER") return toast("Rien n’a été supprimé");
+    try { localStorage.removeItem(KEY); } catch (e) {} S = fresh(); save(); render(); window.scrollTo(0, 0);
+  },
   editProfile: function () { S.step = 1; S.stack = []; save(); render(); window.scrollTo(0, 0); },
   reset: function () { if (!confirm("Tout effacer sur ce téléphone ?")) return; S = fresh(); save(); render(); }
 };
@@ -737,6 +840,7 @@ app.addEventListener("input", function (e) {
   if (k.indexOf("_devis.") === 0) { T.devis[k.slice(7)] = v; return; }
   if (k === "q") { S.q = v; save(); render(); return; }
   var p = k.split("."); if (p[0] === "me") S.me[p[1]] = v; save();
+  if (k === "me.email") checkDev(v);
   if (e.target.type === "date" && S.step >= 3) render();
 });
 app.addEventListener("change", function (e) {

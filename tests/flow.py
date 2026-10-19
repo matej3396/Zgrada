@@ -70,12 +70,32 @@ try:
     tap('[data-act="tab"][data-arg="explorer"]'); tap('[data-act="filter"][data-arg="tout"]')
     ok("Sponsorisé" in pg.inner_text("#app"), "Explorer : emplacement « Sponsorisé » bien marqué"); shot("explorer-sponsor")
     tap('[data-act="tab"][data-arg="messages"]'); shot("messages")
-    tap('[data-act="tab"][data-arg="moi"]'); shot("moi"); tap('[data-act="credits"]')
+    tap('[data-act="tab"][data-arg="moi"]'); shot("moi")
+    # Réglages, données, développeur
+    tap('[data-act="settings"]'); shot("reglages")
+    pg.fill('[data-bind="me.email"]', "quelquun@exemple.ch"); pg.wait_for_timeout(300)
+    ok(pg.locator('[data-act="dev"]').count() == 0, "Développeur caché pour une autre adresse")
+    dev_mail = os.environ.get("DEV_MAIL")
+    if dev_mail:
+      pg.fill('[data-bind="me.email"]', dev_mail); pg.wait_for_timeout(400)
+      ok(pg.locator('[data-act="dev"]').count() == 1, "Développeur visible avec l’adresse du propriétaire")
+    else:
+      pg.evaluate("S.dev=true;save();render()")
+    with pg.expect_download() as dl: tap('[data-act="exportData"]')
+    ok(dl.value.suggested_filename.startswith("zgrada-mes-donnees"), "Téléchargement des données : " + dl.value.suggested_filename)
+    tap('[data-act="dev"]'); shot("developpeur")
+    for a in ["msg", "offer", "rdv", "flake", "d7", "c10", "demoToggle", "raw"]:
+      pg.evaluate("devAct('%s')" % a); pg.wait_for_timeout(60)
+    ok(pg.evaluate("S.convs.some(c=>c.status==='flake')"), "Dev : faux bond simulé")
+    ok(pg.evaluate("S.hideDemo===true"), "Dev : exemples masqués")
+    pg.evaluate("devAct('crash')"); ok("Oups" in pg.inner_text("#app"), "Dev : écran d’erreur testé"); tap('[data-act="recover"]')
+    pg.evaluate("devAct('demoToggle')")
+    pg.evaluate("S.stack=[];S.tab='moi';render()"); tap('[data-act="credits"]')
     pg.fill("#ref", "abc123"); tap('[data-act="ref"]'); shot("credits")
     ok("Code d’un ami" in pg.inner_text("#app"), "Code ami accepté")
     # Persistance
     pg.reload(); pg.wait_for_selector("#app *"); ok("Vos crédits" in pg.inner_text("#app") or "crédits" in pg.inner_text("#app"), "Données gardées après rechargement")
-    credits = pg.evaluate("S.credits"); ok(credits == 5 - 2 + 1 + 2 + 3, "Crédits cohérents : %s" % credits)
+    credits = pg.evaluate("S.credits"); ok(credits == 5 - 2 + 1 + 2 - 2 + 4 + 10 + 3, "Crédits cohérents : %s" % credits)
     # Retour Android
     pg.go_back(); pg.wait_for_timeout(200); ok(pg.evaluate("S.stack.length") == 0, "Bouton retour du téléphone")
     ok(not errs, "Aucune erreur JavaScript" + ("" if not errs else " : " + errs[0][:160]))
