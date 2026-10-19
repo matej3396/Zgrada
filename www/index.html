@@ -276,7 +276,7 @@ function vOnboard() {
     '<div class="label">Votre prénom</div><input class="input" data-bind="me.name" value="' + esc(m.name) + '" placeholder="Matej" autocomplete="given-name">' +
     '<div class="row"><div class="grow"><div class="label">De</div><input class="input" data-bind="me.from" value="' + esc(m.from) + '" placeholder="Clarens"></div><div class="grow"><div class="label">Vers</div><input class="input" data-bind="me.to" value="' + esc(m.to) + '" placeholder="Lausanne"></div></div>' +
     '<div class="label">Date du déménagement</div><input class="input" type="date" data-bind="me.date" value="' + esc(m.date) + '">' +
-    (flat ? '<div class="card col"><b>Le logement que vous cherchez</b><div class="row"><div class="grow"><div class="label">Pièces min.</div><select class="input" data-bind="me.rooms">' + [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option" + (r === +m.rooms ? " selected" : "") + ">" + r + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Loyer max.</div><input class="input" inputmode="numeric" data-bind="me.budget" value="' + esc(m.budget) + '"></div></div>' +
+    (flat ? '<div class="card col"><b>Le logement que vous cherchez</b><div class="row"><div class="grow"><div class="label">Pièces min.</div><select class="input" data-bind="me.rooms">' + [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option value=\"" + r + "\"" + (r === +m.rooms ? " selected" : "") + ">" + num(r) + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Loyer max.</div><input class="input" inputmode="numeric" data-bind="me.budget" value="' + esc(m.budget) + '"></div></div>' +
       '<button class="chip sm' + (m.dog ? " on" : "") + '" data-act="dog" style="align-self:flex-start">' + (m.dog ? ic("check", 16, null, 2.6) : "") + "J’ai un chien</button></div>" : "") +
     '<div style="flex:1"></div><button class="btn y" data-act="finish">Voir les échanges possibles</button></div>';
 }
@@ -304,7 +304,7 @@ function vExplorer() {
     (T.search ? '<input class="input" id="q" data-bind="q" value="' + esc(S.q) + '" placeholder="Canapé, Renens, camionnette…" autofocus>' : "") +
     '<div class="scroller">' + chip("tout", "Tout") + (fy.length ? chip("pour", "Pour vous", "spark") : "") + chip("logement", "Logements", "house") + chip("objet", "Objets", "sofa") + chip("aide", "Aide", "hand") + "</div>" +
     (fy.length && f !== "pour" ? '<button class="card row" style="background:var(--ink);color:#fff;border:0;text-align:left;width:100%" data-act="filter" data-arg="pour"><div class="av" style="width:42px;height:42px;background:var(--yellow);color:var(--ink)">' + ic("spark", 22, null, 2.2) + '</div><div class="grow"><b style="font-size:15px">' + fy.length + " échange" + (fy.length > 1 ? "s" : "") + ' pour vous</b><div class="one" style="font-size:13px;color:#B9C4D0">' + esc(fy[0].title) + "</div></div>" + ic("next", 20, "#fff") + "</button>" : "") +
-    (list.length ? list.map(feedCard).join("") : '<div class="empty">Rien ici pour l’instant.<br>Publiez ce que vous avez avec le bouton jaune.</div>') +
+    (list.length ? list.map(function (o, i) { return feedCard(o) + (i === 1 && f === "tout" && !q ? sponsorCard() : ""); }).join("") : '<div class="empty">Rien ici pour l’instant.<br>Publiez ce que vous avez avec le bouton jaune.</div>') +
     '<div class="small" style="text-align:center;padding:4px 10px">Zgrada démarre : les annonces marquées « exemple » montrent comment ça marche. Les vôtres sont bien réelles.</div>' +
     "</div>" + tabbar();
 }
@@ -415,7 +415,7 @@ function vPublish() {
     '<h1 class="h1">Qu’avez-vous à proposer&#8239;?</h1><div class="seg">' + seg("objet") + seg("aide") + seg("logement") + "</div>" +
     '<label class="card flat row" style="background:' + pal(k.col).bg + ';color:' + pal(k.col).fg + ';cursor:pointer">' + (d.photo ? '<img src="' + d.photo + '" alt="" style="width:64px;height:64px;border-radius:18px;object-fit:cover">' : ic("camera", 28)) + '<div class="grow"><b>' + (d.photo ? "Changer la photo" : "Ajouter une photo") + '</b><div class="small" style="color:inherit;opacity:.8">Elle reste sur votre téléphone</div></div><input type="file" accept="image/*" data-photo hidden></label>' +
     '<div class="label">Titre</div><input class="input" data-bind="_pub.title" value="' + esc(d.title) + '" placeholder="' + (d.kind === "aide" ? "Aide pour porter samedi" : d.kind === "logement" ? "3,5 pièces avec balcon" : "Canapé 3 places") + '">' +
-    (d.kind === "logement" ? '<div class="row"><div class="grow"><div class="label">Pièces</div><select class="input" data-bind="_pub.rooms">' + [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option" + (r === +d.rooms ? " selected" : "") + ">" + r + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Loyer CHF</div><input class="input" inputmode="numeric" data-bind="_pub.rent" value="' + esc(d.rent) + '" placeholder="1450"></div></div><div class="label">Libre le</div><input class="input" type="date" data-bind="_pub.free" value="' + esc(d.free) + '"><button class="chip sm' + (d.dogs ? " on" : "") + '" data-act="pdogs" style="align-self:flex-start">' + (d.dogs ? ic("check", 16, null, 2.6) : "") + "Chiens acceptés</button>" : "") +
+    (d.kind === "logement" ? '<div class="row"><div class="grow"><div class="label">Pièces</div><select class="input" data-bind="_pub.rooms">' + [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option value=\"" + r + "\"" + (r === +d.rooms ? " selected" : "") + ">" + num(r) + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Loyer CHF</div><input class="input" inputmode="numeric" data-bind="_pub.rent" value="' + esc(d.rent) + '" placeholder="1450"></div></div><div class="label">Libre le</div><input class="input" type="date" data-bind="_pub.free" value="' + esc(d.free) + '"><button class="chip sm' + (d.dogs ? " on" : "") + '" data-act="pdogs" style="align-self:flex-start">' + (d.dogs ? ic("check", 16, null, 2.6) : "") + "Chiens acceptés</button>" : "") +
     '<div class="label">Où</div><input class="input" data-bind="_pub.where" value="' + esc(d.where) + '" placeholder="Lausanne, Montoie">' +
     '<div class="label">En échange de</div><div class="wrap">' + W.map(function (w) { return '<button class="chip sm' + (d.wants === w ? " on" : "") + '" data-act="pwants" data-arg="' + esc(w) + '">' + esc(w) + "</button>"; }).join("") + '<button class="chip sm' + (W.indexOf(d.wants) < 0 ? " on" : "") + '" data-act="pwants" data-arg="__other">Autre</button></div>' +
     (W.indexOf(d.wants) < 0 ? '<input class="input" data-bind="_pub.wantsOther" value="' + esc(d.wantsOther) + '" placeholder="Une table de salon">' : "") +
@@ -430,6 +430,8 @@ var STEPS = [
   ["donner", "Donner ce qui ne suit pas", "Publiez vos meubles en échange", -40, "box", "butter", "pub"],
   ["bras", "Trouver des bras", "Des voisins proposent leur aide", -30, "hand", "lav", "aide"],
   ["camion", "Réserver une camionnette", "Ou l’échanger contre un service", -21, "car", "peach", "aide"],
+  ["demenageur", "Déménageur ou garde-meubles", "Comparez 3 devis, sans engagement", -30, "box", "lav", "devis:demenageur"],
+  ["nettoyage", "Nettoyage de fin de bail", "Avec garantie de remise : comparez 3 devis", -14, "spark", "mint", "devis:nettoyage"],
   ["poste", "Faire suivre le courrier", "La Poste, quelques jours avant", -7, "box", "sky"],
   ["edl", "État des lieux de sortie", "Photos de chaque pièce", 0, "list", "mint"],
   ["commune", "Annoncer votre arrivée", "Au contrôle des habitants, dans les 8 jours", 8, "pin", "butter"]
@@ -440,7 +442,7 @@ function vEtapes() {
   var row = function (x) {
     var s = x.s, late = !x.ok && x.due && x.due < today(), when = x.due ? (late ? "En retard · " : "Avant le ") + x.due.getDate() + " " + MOIS[x.due.getMonth()] : s[2];
     return '<div class="li" style="' + (x.ok ? "opacity:.55" : "") + '"><button style="border:0;background:none;padding:0;display:flex" data-act="task" data-arg="' + s[0] + '" aria-label="Fait">' + (x.ok ? '<div class="av" style="width:44px;height:44px;background:var(--mint);color:var(--mint-i)">' + ic("check", 22, null, 2.6) + "</div>" : tile(s[4], s[5], 44)) + '</button><div class="grow"><b style="font-size:15px;' + (x.ok ? "text-decoration:line-through" : "") + '">' + s[1] + '</b><div class="small" style="' + (late ? "color:var(--red)" : "") + '">' + (x.ok ? "Fait" : when) + "</div></div>" +
-      (!x.ok && s[6] ? '<button class="btn sm ghost" style="min-height:38px;padding:0 14px;font-size:13.5px" data-act="' + (s[6] === "pub" ? "publish" : "filterGo") + '" data-arg="' + s[6] + '">' + (s[6] === "pub" ? "Publier" : "Voir") + "</button>" : '<button class="ibtn" style="width:34px;height:34px;box-shadow:none;background:var(--soft)" data-act="task" data-arg="' + s[0] + '" aria-label="Cocher">' + ic(x.ok ? "x" : "check", 16, null, 2.4) + "</button>") + "</div>";
+      (!x.ok && s[6] ? '<button class="btn sm ghost" style="min-height:38px;padding:0 14px;font-size:13.5px" data-act="' + (s[6] === "pub" ? "publish" : s[6].indexOf("devis:") === 0 ? "devis" : "filterGo") + '" data-arg="' + s[6].replace("devis:", "") + '">' + (s[6] === "pub" ? "Publier" : s[6].indexOf("devis:") === 0 ? "Devis" : "Voir") + "</button>" : '<button class="ibtn" style="width:34px;height:34px;box-shadow:none;background:var(--soft)" data-act="task" data-arg="' + s[0] + '" aria-label="Cocher">' + ic(x.ok ? "x" : "check", 16, null, 2.4) + "</button>") + "</div>";
   };
   return '<div class="scr"><div class="top"><div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Mon déménagement</div>' + (n != null ? '<span class="pill" style="background:var(--ink);color:#fff">' + (n > 0 ? "J-" + n : n === 0 ? "Jour J" : "J+" + -n) + "</span>" : "") + "</div>" +
     '<div class="card row" style="gap:16px;padding:18px"><div style="width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--yellow) 0 ' + pct + "%,var(--soft) " + pct + '% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0"><div style="width:72px;height:72px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center"><b style="font-size:22px">' + done + "/" + STEPS.length + '</b></div></div><div class="grow"><b style="font-size:17px">' + (S.me.from || S.me.to ? esc(S.me.from || "?") + " → " + esc(S.me.to || "?") : "Votre déménagement") + '</b><div class="small" style="margin-top:4px">' + (d ? fmt(d) + " · " + (list.some(function (x) { return !x.ok && x.due && x.due < today(); }) ? "Quelques étapes ont pris du retard." : "Vous êtes dans les temps.") : "Ajoutez la date pour savoir quoi faire quand.") + "</div>" + (d ? "" : '<input class="input" type="date" style="margin-top:8px;min-height:44px" data-bind="me.date" aria-label="Date du déménagement">') + "</div></div>" +
@@ -459,14 +461,38 @@ function vMoi() {
     '<a class="small" style="text-align:center;padding:6px" href="v1.html">Ancienne version de Zgrada</a></div>' + tabbar();
 }
 function vCredits() {
+  var earn = [["spark", "butter", "Bienvenue", "+5", true], ["plus", "mint", "Votre première annonce", "+2", !!S.bonusPub], ["swap", "lav", "Chaque échange réalisé", "+1 rendu sur votre mise", S.deals > 0], ["user", "sky", "Un ami vous rejoint", "+3 pour vous, +3 pour lui", S.refUsed || false]];
   return '<div class="scr plain">' + topBack("Vos crédits") +
-    '<div class="card" style="background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center"><div><div class="small" style="color:#B9C4D0">Solde</div><div style="font-size:40px;font-weight:800">' + S.credits + '</div></div><div class="small" style="text-align:right;color:#B9C4D0">10 crédits = 5 CHF</div></div>' +
-    '<div class="card col"><b>Comment ça marche</b><div class="row">' + tile("swap", "butter", 40) + '<span class="sub grow">Un échange accepté : 2 crédits chacun en gage. 1 revient quand vous confirmez tous les deux.</span></div><div class="row">' + tile("coin", "mint", 40) + '<span class="sub grow">Vous pouvez aussi payer un service en crédits, quand le troc ne tombe pas juste.</span></div></div>' +
-    '<h2 class="h2">Historique</h2>' + S.ledger.slice().reverse().map(function (l) { return '<div class="li"><div class="grow"><b style="font-size:15px">' + esc(l.t) + '</b><div class="small">' + new Date(l.ts).getDate() + " " + MOIS[new Date(l.ts).getMonth()] + '</div></div><b style="font-size:17px;color:' + (l.n > 0 ? "var(--mint-i)" : "var(--ink)") + '">' + (l.n > 0 ? "+" : "−") + Math.abs(l.n) + "</b></div>"; }).join("") +
-    '<div class="card flat col" style="background:var(--butter)"><b>Code d’un ami</b>' + (S.refUsed ? '<span class="small" style="color:var(--butter-i)">Déjà utilisé · +3 reçus</span>' : '<div class="row"><input class="input" id="ref" placeholder="ABC123" style="min-height:44px;text-transform:uppercase"><button class="btn sm" data-act="ref">Valider</button></div>') + "</div>" +
-    '<button class="btn y" data-act="buy">Recharger 10 crédits · 5 CHF</button></div>';
+    '<div class="card" style="background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center"><div><div class="small" style="color:#B9C4D0">Solde</div><div style="font-size:40px;font-weight:800">' + S.credits + '</div></div><div class="small" style="text-align:right;color:#B9C4D0;max-width:55%">Gratuits : ils se gagnent, ils ne s’achètent pas</div></div>' +
+    '<div class="card col"><b>À quoi ils servent</b><div class="row">' + tile("swap", "butter", 40) + '<span class="sub grow">Quand vous acceptez un rendez-vous, chacun met 2 crédits en gage. 1 revient une fois l’échange fait. Faux bond : la mise va à l’autre.</span></div><div class="row">' + tile("coin", "mint", 40) + '<span class="sub grow">Et pour compléter un troc qui ne tombe pas juste.</span></div></div>' +
+    '<h2 class="h2">Comment en gagner</h2>' + earn.map(function (e) { return '<div class="li">' + tile(e[0], e[1], 40) + '<div class="grow"><b style="font-size:15px">' + e[2] + '</b><div class="small">' + e[3] + "</div></div>" + (e[4] ? ic("check", 20, "var(--mint-i)", 2.6) : "") + "</div>"; }).join("") +
+    '<div class="card flat col" style="background:var(--butter)"><b>Code d’un ami</b>' + (S.refUsed ? '<span class="small" style="color:var(--butter-i)">Déjà utilisé · +3 reçus</span>' : '<div class="row"><input class="input" id="ref" placeholder="ABC123" style="min-height:44px;text-transform:uppercase"><button class="btn sm" data-act="ref">Valider</button></div>') + '<button class="btn ghost sm" data-act="copy">' + ic("copy", 18) + "Partager mon code " + S.code + "</button></div>" +
+    '<h2 class="h2">Historique</h2>' + S.ledger.slice().reverse().map(function (l) { return '<div class="li"><div class="grow"><b style="font-size:15px">' + esc(l.t) + '</b><div class="small">' + new Date(l.ts).getDate() + " " + MOIS[new Date(l.ts).getMonth()] + '</div></div><b style="font-size:17px;color:' + (l.n > 0 ? "var(--mint-i)" : "var(--ink)") + '">' + (l.n > 0 ? "+" : "−") + Math.abs(l.n) + "</b></div>"; }).join("") + "</div>";
 }
 
+/* Demandes de devis (payées par les entreprises, gratuites pour vous) */
+var SERVICES = {
+  nettoyage: ["Nettoyage de fin de bail", "spark", "mint", "Avec garantie de remise : l’entreprise revient si la régie refuse."],
+  demenageur: ["Déménageur", "car", "peach", "Camion, porteurs, emballage selon vos besoins."],
+  gardemeubles: ["Garde-meubles", "box", "lav", "Quelques semaines entre deux appartements."]
+};
+function vDevis(p) {
+  var d = T.devis || (T.devis = { svc: p.svc || "nettoyage", rooms: S.me.rooms || 3.5, date: S.me.date || "", from: S.me.from || "", to: S.me.to || "", ok: false, note: "" }), sv = SERVICES[d.svc];
+  var sent = (S.quotes || []).filter(function (q) { return q.svc === d.svc; })[0];
+  return '<div class="scr plain">' + topBack("3 devis gratuits") +
+    '<div class="seg">' + Object.keys(SERVICES).map(function (k) { return '<button class="' + (d.svc === k ? "on" : "") + '" data-act="dsvc" data-arg="' + k + '">' + SERVICES[k][0].split(" ")[0] + "</button>"; }).join("") + "</div>" +
+    '<div class="card row">' + tile(sv[1], sv[2], 52) + '<div class="grow"><b style="font-size:17px">' + sv[0] + '</b><div class="small">' + sv[3] + "</div></div></div>" +
+    (sent ? '<div class="card flat col" style="background:var(--mint)"><b style="color:var(--mint-i)">Demande prête</b><span class="sub">Zgrada démarre : les entreprises partenaires arrivent. Dès qu’elles seront là, 3 d’entre elles vous répondront. Rien n’a été envoyé pour l’instant.</span><button class="btn ghost sm" data-act="dcancel" data-arg="' + d.svc + '">Retirer ma demande</button></div>' :
+    '<div class="row"><div class="grow"><div class="label">Pièces</div><select class="input" data-bind="_devis.rooms">' + [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5.5].map(function (r) { return "<option value=\"" + r + "\"" + (r === +d.rooms ? " selected" : "") + ">" + num(r) + "</option>"; }).join("") + '</select></div><div class="grow"><div class="label">Date</div><input class="input" type="date" data-bind="_devis.date" value="' + esc(d.date) + '"></div></div>' +
+    '<div class="row"><div class="grow"><div class="label">De</div><input class="input" data-bind="_devis.from" value="' + esc(d.from) + '" placeholder="Clarens"></div>' + (d.svc === "nettoyage" ? "" : '<div class="grow"><div class="label">Vers</div><input class="input" data-bind="_devis.to" value="' + esc(d.to) + '" placeholder="Lausanne"></div>') + "</div>" +
+    '<div class="label">Précisions</div><textarea class="input" data-bind="_devis.note" placeholder="Étage, ascenseur, piano, cave…">' + esc(d.note) + "</textarea>" +
+    '<button class="card flat row" style="background:var(--butter);border:0;text-align:left;width:100%" data-act="dok"><span class="av" style="width:28px;height:28px;border-radius:9px;background:' + (d.ok ? "var(--ink)" : "#fff") + ';color:#fff;border:2px solid var(--ink)">' + (d.ok ? ic("check", 16, null, 3) : "") + '</span><span class="small grow" style="color:var(--butter-i)">J’accepte que Zgrada transmette ces informations et mon prénom à 3 entreprises, uniquement pour cette demande.</span></button>' +
+    '<button class="btn y" data-act="dsend" ' + (d.ok ? "" : "disabled") + ">Demander 3 devis</button>" +
+    '<div class="small" style="text-align:center">Gratuit pour vous, sans engagement. Ce sont les entreprises qui paient Zgrada.</div>') + "</div>";
+}
+function sponsorCard() {
+  return '<button class="fcard" style="background:var(--butter)" data-act="devis" data-arg="nettoyage">' + tile("spark", "mint", 64) + '<div class="grow col" style="gap:5px"><span class="demo" style="align-self:flex-start;background:#fff">Sponsorisé · exemple</span><div class="ft">Nettoyage de fin de bail avec garantie de remise</div><div class="small one">Entreprise partenaire · 3 devis gratuits</div></div>' + ic("next", 20, "var(--butter-i)") + "</button>";
+}
 /* ---------- Zora, l’assistante (hors ligne, comme Truffo dans Canicrew) ----------
    Elle reconnaît la question par mots-clés et synonymes, puis répond avec une fiche courte et des boutons vers l’app. */
 function mascot(s) {
@@ -481,7 +507,7 @@ var KB = [
   { id: "publier", q: "Comment publier une annonce ?", k: ["publier", "annonce", "poster", "mettre en ligne", "vendre", "donner", "photo", "se debarrasser", "debarrasser"],
     t: "Publier une annonce", s: ["Touchez le bouton jaune « + » en bas.", "Choisissez : objet, coup de main ou logement.", "Ajoutez une photo (elle reste sur votre téléphone) et un titre clair.", "Dites ce que vous voulez en échange, ou « À donner »."], a: [["Publier maintenant", "publish"]] },
   { id: "credits", q: "À quoi servent les crédits ?", k: ["credit", "credits", "payer", "prix", "gratuit", "cout", "coute", "recharger", "argent", "twint"],
-    t: "Les crédits", p: "Vous en recevez 5 à l’arrivée. Ils servent de gage quand vous acceptez un échange, et de monnaie d’appoint quand le troc ne tombe pas juste. 10 crédits = 5 CHF ; ils ne se reconvertissent pas en argent.", a: [["Voir mes crédits", "credits"]] },
+    t: "Les crédits", p: "Ils sont gratuits : ils se gagnent, ils ne s’achètent pas. 5 à l’arrivée, +2 pour votre première annonce, +3 par ami invité. Ils servent de gage quand vous acceptez un rendez-vous, et à compléter un troc qui ne tombe pas juste.", a: [["Voir mes crédits", "credits"]] },
   { id: "pot", q: "C’est quoi les 2 crédits en gage ?", k: ["gage", "pot", "mise", "engagement", "faux bond", "lapin", "pas venu", "annule", "rembourse"],
     t: "Le pot d’engagement", p: "Quand vous dites oui à un rendez-vous, chacun met 2 crédits en gage. Une fois l’échange fait, vous confirmez tous les deux et 1 crédit revient à chacun. Si quelqu’un ne vient pas, sa mise va à l’autre. Ça évite les lapins." },
   { id: "parrain", q: "Comment gagner des crédits ?", k: ["parrain", "parrainage", "ami", "code", "inviter", "gagner"],
@@ -517,10 +543,12 @@ var KB = [
     t: "Rester prudent", s: ["Ne payez jamais un logement avant de l’avoir visité et d’avoir rencontré le bailleur ou la régie.", "Méfiez-vous d’un loyer bien en dessous du quartier ou d’un propriétaire « à l’étranger ».", "Donnez rendez-vous dans un lieu public pour les petits objets.", "Sur Zgrada, signalez tout profil suspect."] },
   { id: "dossier", q: "Quels documents pour un appartement ?", k: ["dossier", "document", "poursuites", "extrait", "salaire", "fiche de salaire", "candidature", "regie"],
     t: "Le dossier de candidature", s: ["Extrait du registre des poursuites (moins de 3 mois).", "3 dernières fiches de salaire ou contrat de travail.", "Copie de la pièce d’identité ou du permis.", "Attestation d’assurance RC."] },
+  { id: "devis", q: "Comment avoir des devis ?", k: ["devis", "nettoyage", "nettoyeur", "demenageur", "entreprise", "garde meuble", "garde-meubles", "garantie de remise", "comparer"],
+    t: "3 devis gratuits", p: "Dans Étapes, touchez « Devis » à côté du nettoyage ou du déménageur. Remplissez 3 infos, cochez votre accord : 3 entreprises vous répondent. C’est gratuit pour vous, ce sont elles qui paient Zgrada.", a: [["Demander des devis", "devis|nettoyage"]] },
   { id: "donnees", q: "Où sont mes données ?", k: ["donnees", "vie privee", "confidentialite", "serveur", "rgpd", "effacer", "supprimer"],
     t: "Vos données", p: "Pour l’instant, tout reste sur votre téléphone : annonces, photos, messages. Vous pouvez tout effacer dans Moi › Réglages." }
 ];
-var POPULAR = ["app", "troc", "resilier", "bras", "credits", "commune"];
+var POPULAR = ["app", "troc", "resilier", "devis", "credits", "commune"];
 var STOP = "le la les un une des de du d l a au aux et ou en pour par sur dans avec mon ma mes ton ta tes je tu il on nous vous est c ce ca que qui quoi comment faire fait peut peux puis dois est-ce est ce ne pas plus".split(" ");
 function norm(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, " ").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
 function findTopics(q) {
@@ -590,6 +618,7 @@ function view() {
     if (c.v === "publish") return vPublish();
     if (c.v === "credits") return vCredits();
     if (c.v === "assist") return vAssist();
+    if (c.v === "devis") return vDevis(c.p);
   }
   return { explorer: vExplorer, etapes: vEtapes, messages: vMessages, moi: vMoi }[S.tab]();
 }
@@ -671,12 +700,16 @@ var A = {
     if (d.kind === "logement" && !(parseInt(d.rent, 10) > 0)) return toast("Indiquez le loyer");
     var o = { id: "m" + Date.now(), kind: d.kind, title: d.title.trim(), where: d.where.trim() || S.me.zone || "Près de chez vous", km: 0, wants: wants, owner: S.me.name || "Vous", ocol: "sky", mine: true, desc: d.desc.trim(), photo: d.photo, created: Date.now() };
     if (d.kind === "logement") { o.rooms = +d.rooms; o.rent = parseInt(String(d.rent).replace(/\D/g, ""), 10); o.free = d.free || iso(today()); o.dogs = d.dogs; }
-    S.offers.unshift(o); T.pub = null; S.stack = []; save(); toast("Annonce publiée"); go("offer", { id: o.id });
+    S.offers.unshift(o); T.pub = null; S.stack = []; var bonus = !S.bonusPub; if (bonus) { S.bonusPub = true; S.credits += 2; S.ledger.push({ t: "Première annonce", n: 2, ts: Date.now() }); } save(); toast(bonus ? "Annonce publiée · +2 crédits" : "Annonce publiée"); go("offer", { id: o.id });
   },
   remove: function (id) { if (!confirm("Retirer cette annonce ?")) return; offer(id).gone = true; S.stack = []; S.tab = "moi"; save(); render(); },
   task: function (k) { S.tasks[k] = !S.tasks[k]; save(); render(); },
   credits: function () { go("credits"); },
-  buy: function () { S.credits += 10; S.ledger.push({ t: "Recharge (démo, sans paiement)", n: 10, ts: Date.now() }); save(); toast("+10 crédits (démo : le paiement TWINT viendra au lancement)"); },
+  devis: function (svc) { T.devis = null; go("devis", { svc: svc }); },
+  dsvc: function (k) { T.devis.svc = k; T.devis.ok = false; render(); },
+  dok: function () { T.devis.ok = !T.devis.ok; render(); },
+  dsend: function () { var d = T.devis; if (!d.ok) return; S.quotes = (S.quotes || []).filter(function (q) { return q.svc !== d.svc; }); S.quotes.push({ svc: d.svc, rooms: d.rooms, date: d.date, from: d.from, to: d.to, note: d.note, ts: Date.now() }); save(); toast("Demande prête"); render(); },
+  dcancel: function (k) { S.quotes = (S.quotes || []).filter(function (q) { return q.svc !== k; }); T.devis.ok = false; save(); render(); },
   ref: function () { var v = (document.getElementById("ref").value || "").trim().toUpperCase(); if (!/^[A-Z0-9]{6}$/.test(v)) return toast("Le code fait 6 lettres ou chiffres"); if (v === S.code) return toast("C’est votre propre code"); S.refUsed = true; S.credits += 3; S.ledger.push({ t: "Code d’un ami", n: 3, ts: Date.now() }); save(); toast("+3 crédits"); },
   copy: function () { var t = "Rejoins-moi sur Zgrada pour échanger meubles, coups de main et logements. Mon code : " + S.code + " (3 crédits offerts)"; try { navigator.clipboard.writeText(t).then(function () { toast("Copié, à coller dans un message"); }, function () { toast("Votre code : " + S.code); }); } catch (e) { toast("Votre code : " + S.code); } },
   editProfile: function () { S.step = 1; S.stack = []; save(); render(); window.scrollTo(0, 0); },
@@ -701,6 +734,7 @@ app.addEventListener("input", function (e) {
   var v = e.target.value;
   if (k === "_note") { T.draft.note = v; return; }
   if (k.indexOf("_pub.") === 0) { T.pub[k.slice(5)] = v; return; }
+  if (k.indexOf("_devis.") === 0) { T.devis[k.slice(7)] = v; return; }
   if (k === "q") { S.q = v; save(); render(); return; }
   var p = k.split("."); if (p[0] === "me") S.me[p[1]] = v; save();
   if (e.target.type === "date" && S.step >= 3) render();
@@ -711,7 +745,7 @@ app.addEventListener("change", function (e) {
     var img = new Image(), r = new FileReader();
     r.onload = function () { img.onload = function () { var s = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); T.pub.photo = c.toDataURL("image/jpeg", .72); render(); }; img.src = r.result; };
     r.readAsDataURL(f);
-  } else if (e.target.tagName === "SELECT") { var k = e.target.getAttribute("data-bind"); if (k && k.indexOf("_pub.") === 0) T.pub[k.slice(5)] = e.target.value; else if (k) { S.me[k.split(".")[1]] = e.target.value; save(); } }
+  } else if (e.target.tagName === "SELECT") { var k = e.target.getAttribute("data-bind"); if (k && k.indexOf("_devis.") === 0) T.devis[k.slice(7)] = e.target.value; else if (k && k.indexOf("_pub.") === 0) T.pub[k.slice(5)] = e.target.value; else if (k) { S.me[k.split(".")[1]] = e.target.value; save(); } }
 });
 app.addEventListener("submit", function (e) {
   var f = e.target.closest("[data-form]"); if (!f) return; e.preventDefault();
